@@ -11,6 +11,11 @@ if leaderf#versionCheck() == 0  " this check is necessary
     finish
 endif
 
+let g:Lf_SessionDirectory = g:Lf_CacheDirectory . '/.LfCache/Session'
+if !isdirectory(Lf_SessionDirectory)
+  call mkdir(Lf_SessionDirectory, "p")
+endif
+
 exec g:Lf_py "from leaderf.anyExpl import *"
 
 function! leaderf#Any#Maps(category)
@@ -325,7 +330,8 @@ function! leaderf#Any#start(bang, args) abort
     if a:args == ""
 
     else
-        mksession! activeSession.vim
+        let g:Lf_SessionFilePath = g:Lf_SessionDirectory . '/' . substitute(getcwd(),'/','@','g') . '@' . 'activeSession.vim'
+        exec "mksession! " . g:Lf_SessionFilePath
         call leaderf#LfPy("anyHub.start(r''' ".a:args." ''', bang=".a:bang.")")
     endif
 endfunction
