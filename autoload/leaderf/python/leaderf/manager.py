@@ -353,11 +353,11 @@ class Manager(object):
                 self._preview_winid = 0
 
     def _previewResult(self, preview):
-        if self._getInstance().getWinPos() == 'floatwin':
-            self._cli.buildPopupPrompt()
+        # if self._getInstance().getWinPos() == 'floatwin':
+        #     self._cli.buildPopupPrompt()
 
-        if int(lfEval("win_id2win(%d)" % self._preview_winid)) != vim.current.window.number:
-            self._closePreviewPopup()
+        # if int(lfEval("win_id2win(%d)" % self._preview_winid)) != vim.current.window.number:
+        #     self._closePreviewPopup()
 
         if not self._needPreview(preview):
             return
@@ -843,10 +843,6 @@ class Manager(object):
         if adjust:
             lfCmd("norm! zt")
 
-        self._getInstance().setLineNumber()
-        lfCmd("setlocal cursorline!")   # these two help to redraw the statusline,
-        lfCmd("setlocal cursorline!")   # also fix a weird bug of vim
-
     def _toDown(self):
         if self._getInstance().getWinPos() == 'popup':
             lfCmd("call win_execute(%d, 'norm! j')" % (self._getInstance().getPopupWinId()))
@@ -858,9 +854,6 @@ class Manager(object):
             self._setResultContent()
 
         lfCmd("norm! j")
-        self._getInstance().setLineNumber()
-        lfCmd("setlocal cursorline!")   # these two help to redraw the statusline,
-        lfCmd("setlocal cursorline!")   # also fix a weird bug of vim
 
     def _pageUp(self):
         if self._getInstance().getWinPos() == 'popup':
@@ -877,8 +870,6 @@ class Manager(object):
 
         lfCmd('exec "norm! \<PageUp>"')
 
-        self._getInstance().setLineNumber()
-
     def _pageDown(self):
         if self._getInstance().getWinPos() == 'popup':
             lfCmd("""call win_execute(%d, 'exec "norm! \<PageDown>"')""" % (self._getInstance().getPopupWinId()))
@@ -889,8 +880,6 @@ class Manager(object):
             self._setResultContent()
 
         lfCmd('exec "norm! \<PageDown>"')
-
-        self._getInstance().setLineNumber()
 
     def _leftClick(self):
         if self._getInstance().getWinPos() == 'popup':
@@ -2273,20 +2262,21 @@ class Manager(object):
             self._guessSearch(self._content)
 
         for cmd in self._cli.input(self._callback):
-            cur_len = len(self._content)
-            cur_content = self._content[:cur_len]
+            def get_cur_content():
+                cur_len = len(self._content)
+                return self._content[:cur_len]
             if equal(cmd, '<Update>'):
                 if self._getInstance().getWinPos() == 'popup':
                     if self._getInstance()._window_object.cursor[0] > 1:
                         lfCmd("call win_execute({}, 'norm! gg')".format(self._getInstance().getPopupWinId()))
-                self._search(cur_content)
+                self._search(get_cur_content())
             elif equal(cmd, '<Shorten>'):
                 if self._getInstance().isReverseOrder():
                     lfCmd("normal! G")
                 else:
                     self._gotoFirstLine()
                 self._index = 0 # search from beginning
-                self._search(cur_content)
+                self._search(get_cur_content())
             elif equal(cmd, '<Mode>'):
                 self._setStlMode()
                 if self._getInstance().getWinPos() in ('popup', 'floatwin'):
@@ -2298,7 +2288,7 @@ class Manager(object):
                     self._gotoFirstLine()
                 self._index = 0 # search from beginning
                 if self._cli.pattern:
-                    self._search(cur_content)
+                    self._search(get_cur_content())
             elif equal(cmd, '<C-K>'):
                 self._toUp()
                 self._previewResult(False)
@@ -2312,7 +2302,7 @@ class Manager(object):
                     else:
                         self._gotoFirstLine()
                     self._index = 0 # search from beginning
-                    self._search(cur_content)
+                    self._search(get_cur_content())
             elif equal(cmd, '<Down>'):
                 if self._cli.nextHistory(self._getExplorer().getStlCategory()):
                     if self._getInstance().isReverseOrder():
@@ -2320,7 +2310,7 @@ class Manager(object):
                     else:
                         self._gotoFirstLine()
                     self._index = 0 # search from beginning
-                    self._search(cur_content)
+                    self._search(get_cur_content())
             elif equal(cmd, '<LeftMouse>'):
                 if self._leftClick():
                     break

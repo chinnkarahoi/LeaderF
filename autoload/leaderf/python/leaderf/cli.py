@@ -94,8 +94,8 @@ class LfCli(object):
         self._cmdline.insert(self._cursor_pos, ch)
         self._cursor_pos += 1
 
-    def _paste(self):
-        for ch in lfEval("@*"):
+    def _paste(self, reg = ''):
+        for ch in reg:
             self._insert(ch)
 
     def _backspace(self):
@@ -691,9 +691,13 @@ class LfCli(object):
                             self._buildPattern()
                             yield '<Mode>'
                     elif equal(cmd, '<C-R>'):
-                        self._is_fuzzy = not self._is_fuzzy
+                        self._paste(lfEval("@w"))
                         self._buildPattern()
-                        yield '<Mode>'
+                        yield '<Update>'
+                    elif equal(cmd, '<C-V>') or equal(cmd, '<S-Insert>'):
+                        self._paste(lfEval("@+"))
+                        self._buildPattern()
+                        yield '<Update>'
                     elif equal(cmd, '<BS>') or equal(cmd, '<C-H>'):
                         if not self._pattern:
                             continue
@@ -718,10 +722,6 @@ class LfCli(object):
                         self._delete()
                         self._buildPattern()
                         yield '<Shorten>'
-                    elif equal(cmd, '<C-V>') or equal(cmd, '<S-Insert>'):
-                        self._paste()
-                        self._buildPattern()
-                        yield '<Update>'
                     elif equal(cmd, '<Home>') or equal(cmd, '<C-B>'):
                         self._toBegin()
                     elif equal(cmd, '<End>') or equal(cmd, '<C-E>'):
