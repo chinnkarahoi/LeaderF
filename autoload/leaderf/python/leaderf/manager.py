@@ -1589,6 +1589,7 @@ class Manager(object):
 
     def _accept(self, file, mode, *args, **kwargs):
         if file:
+            lfCmd("silent! wincmd p | silent! tabonly | silent! source activeSession.vim")
             if mode == '':
                 pass
             elif mode == 'h':
@@ -2343,6 +2344,7 @@ class Manager(object):
             elif equal(cmd, '<Quit>'):
                 self._cli.writeHistory(self._getExplorer().getStlCategory())
                 self.quit()
+                lfCmd("silent! tabonly | silent! source activeSession.vim")
                 break
             elif equal(cmd, '<Tab>'):   # switch to Normal mode
                 self._current_mode = 'NORMAL'

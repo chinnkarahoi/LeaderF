@@ -325,6 +325,7 @@ function! leaderf#Any#start(bang, args) abort
     if a:args == ""
 
     else
+        mksession! activeSession.vim
         call leaderf#LfPy("anyHub.start(r''' ".a:args." ''', bang=".a:bang.")")
     endif
 endfunction
