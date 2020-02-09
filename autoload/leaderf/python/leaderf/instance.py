@@ -291,7 +291,7 @@ class LfInstance(object):
         lfCmd("setlocal colorcolumn=")
         if self._reverse_order:
             lfCmd("setlocal nonumber")
-            lfCmd("setlocal folccolumn=0")
+            lfCmd("setlocal foldcolumn=0")
             lfCmd("setlocal winfixheight")
         else:
             lfCmd("setlocal number")
