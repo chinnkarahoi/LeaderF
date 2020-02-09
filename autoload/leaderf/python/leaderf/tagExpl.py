@@ -192,7 +192,6 @@ class TagExplManager(Manager):
             tagaddress = tagaddress[2:-2]
             index = [x + 1 for x in range(len(content)) if tagaddress in content[x]]
             tagaddress = str(index[0])
-        a = [re.findall(tagaddress, line) for line in open(file)]
         if not os.path.isabs(file):
             file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
             file = os.path.normpath(lfEncode(file))
