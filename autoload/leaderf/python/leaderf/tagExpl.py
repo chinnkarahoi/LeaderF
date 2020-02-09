@@ -197,7 +197,7 @@ class TagExplManager(Manager):
             file = os.path.normpath(lfEncode(file))
 
         buf_number = lfEval("bufadd('{}')".format(escQuote(file)))
-        self._createPopupPreview("", buf_number, tagaddress)
+        self._createPopupPreview(tagname, buf_number, tagaddress)
     def _beforeExit(self):
         super(TagExplManager, self)._beforeExit()
         for k, v in self._cursorline_dict.items():
