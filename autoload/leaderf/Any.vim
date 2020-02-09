@@ -330,7 +330,7 @@ function! leaderf#Any#start(bang, args) abort
     if a:args == ""
 
     else
-        norm "wyiw
+        let @w=expand('<cword>')
         let g:Lf_PreviewResultToggle = 0
         let g:Lf_SessionFilePath = g:Lf_SessionDirectory . '/' . substitute(getcwd(),'/','@','g') . '@' . 'activeSession.vim'
         exec "mksession! " . g:Lf_SessionFilePath

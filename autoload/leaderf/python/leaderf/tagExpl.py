@@ -185,16 +185,27 @@ class TagExplManager(Manager):
         tagname, file, right = line.split('\t', 2)
         res = right.split(';"\t', 1)
         tagaddress = res[0]
+        file = lfEval('getcwd()') + '/' + file
 
         if tagaddress[0] in '/?':
             with open(file) as f:
                 content = f.readlines()
             tagaddress = tagaddress[2:-2]
-            index = [x + 1 for x in range(len(content)) if tagaddress in content[x]]
+            tagaddress = tagaddress.replace('?','.?')
+            tagaddress = tagaddress.replace('\\','.?')
+            tagaddress = tagaddress.replace('$','.?')
+            tagaddress = tagaddress.replace('"','.?')
+            tagaddress = tagaddress.replace('^','.?')
+            tagaddress = tagaddress.replace('(','.?')
+            tagaddress = tagaddress.replace(')','.?')
+            tagaddress = tagaddress.replace('+','.?')
+            tagaddress = tagaddress.replace('*','.?')
+            tagaddress = tagaddress.replace("'",'.?')
+            tagaddress = tagaddress.replace("[",'.?')
+            tagaddress = tagaddress.replace("]",'.?')
+            index = [x + 1 for x in range(len(content)) if bool(re.match(tagaddress.replace('\\','.?'), content[x]))]
+            print(tagaddress)
             tagaddress = str(index[0])
-        if not os.path.isabs(file):
-            file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
-            file = os.path.normpath(lfEncode(file))
 
         buf_number = lfEval("bufadd('{}')".format(escQuote(file)))
         self._createPopupPreview(tagname, buf_number, tagaddress)
