@@ -79,6 +79,8 @@ def catchException(func):
 # Manager
 #*****************************************************
 class Manager(object):
+    def _preview_in_popup(self):
+        return lfEval("get(g:, 'Lf_PreviewInPopup', 0)") == '1'
     def __init__(self):
         self._autochdir = 0
         self._instance = None
@@ -103,7 +105,6 @@ class Manager(object):
         self._orig_cwd = None
         self._cursorline_dict = {}
         self._empty_query = lfEval("get(g:, 'Lf_EmptyQuery', 1)") == '1'
-        self._preview_in_popup = lfEval("get(g:, 'Lf_PreviewInPopup', 0)") == '1'
         self._preview_winid = 0
         self._match_ids = []
         self._vim_file_autoloaded = False
@@ -353,18 +354,18 @@ class Manager(object):
                 self._preview_winid = 0
 
     def _previewResult(self, preview):
-        # if self._getInstance().getWinPos() == 'floatwin':
-        #     self._cli.buildPopupPrompt()
+        if self._getInstance().getWinPos() == 'floatwin':
+            self._cli.buildPopupPrompt()
 
-        # if int(lfEval("win_id2win(%d)" % self._preview_winid)) != vim.current.window.number:
-        #     self._closePreviewPopup()
+        if int(lfEval("win_id2win(%d)" % self._preview_winid)) != vim.current.window.number:
+            self._closePreviewPopup()
 
         if not self._needPreview(preview):
             return
 
         line = self._getInstance().currentLine
 
-        if self._preview_in_popup:
+        if self._preview_in_popup():
             self._previewInPopup(line)
             return
 
@@ -469,7 +470,7 @@ class Manager(object):
             if buffer_len >= line_nr > 0:
                 lfCmd("""call nvim_win_set_cursor(%d, [%d, 1])""" % (self._preview_winid, line_nr))
 
-            lfCmd("call nvim_win_set_option(%d, 'number', v:true)" % self._preview_winid)
+            lfCmd("call nvim_win_set_option(%d, 'number', v:false)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'relativenumber', v:false)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'foldlevel', 1000)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'cursorline', v:true)" % self._preview_winid)
@@ -624,7 +625,7 @@ class Manager(object):
                 lfCmd("noautocmd call win_gotoid(%s)" % cur_winid)
             if buffer_len >= line_nr > 0:
                 lfCmd("""call nvim_win_set_cursor(%d, [%d, 1])""" % (self._preview_winid, line_nr))
-            lfCmd("call nvim_win_set_option(%d, 'number', v:true)" % self._preview_winid)
+            lfCmd("call nvim_win_set_option(%d, 'number', v:false)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'relativenumber', v:false)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'foldlevel', 1000)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'cursorline', v:true)" % self._preview_winid)
@@ -689,6 +690,10 @@ class Manager(object):
             preview:
                 if True, always preview the result no matter what `g:Lf_PreviewResult` is.
         """
+        if lfEval("g:Lf_PreviewResultToggle") == '1':
+            return True
+        else:
+            return False
         preview_dict = {k.lower(): v for k, v in lfEval("g:Lf_PreviewResult").items()}
         category = self._getExplorer().getStlCategory()
         if not preview and int(preview_dict.get(category.lower(), 0)) == 0:
@@ -2371,13 +2376,18 @@ class Manager(object):
                 if self._getExplorer().supportsMulti():
                     self.selectMulti()
             elif equal(cmd, '<C-A>'):
-                if self._getExplorer().supportsMulti():
-                    self.selectAll()
+                if lfEval('g:Lf_PreviewResultToggle') == '1':
+                    lfCmd("let g:Lf_PreviewInPopup = 1 - g:Lf_PreviewInPopup")
+                else:
+                    lfCmd("let g:Lf_PreviewResultToggle = 1")
+                self._closePreviewPopup()
+                self._previewResult(False)
             elif equal(cmd, '<C-L>'):
                 self.clearSelections()
             elif equal(cmd, '<C-P>'):
+                lfCmd("let g:Lf_PreviewResultToggle = 1 - g:Lf_PreviewResultToggle")
                 self._ctrlp_pressed = True
-                self._previewResult(True)
+                self._previewResult(False)
                 self._ctrlp_pressed = False
             elif equal(cmd, '<PageUp>'):
                 self._pageUp()

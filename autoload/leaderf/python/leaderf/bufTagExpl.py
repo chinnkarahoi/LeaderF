@@ -475,7 +475,7 @@ class BufTagExplManager(Manager):
         line = self._getInstance().currentLine
         line_nr = self._getInstance().window.cursor[0]
 
-        if self._preview_in_popup:
+        if self._preview_in_popup():
             self._previewInPopup(line, self._getInstance().buffer, line_nr)
             return
 

@@ -291,7 +291,7 @@ class LfInstance(object):
         lfCmd("setlocal colorcolumn=")
         if self._reverse_order:
             lfCmd("setlocal nonumber")
-            lfCmd("setlocal foldcolumn=1")
+            lfCmd("setlocal folccolumn=0")
             lfCmd("setlocal winfixheight")
         else:
             lfCmd("setlocal number")
@@ -402,7 +402,7 @@ class LfInstance(object):
             lfCmd("silent let winid = nvim_open_win(%d, 1, %s)" % (buf_number, str(config)))
             self._popup_winid = int(lfEval("winid"))
             self._setAttributes()
-            lfCmd("call nvim_win_set_option(%d, 'foldcolumn', 1)" % self._popup_winid)
+            lfCmd("call nvim_win_set_option(%d, 'foldcolumn', 0)" % self._popup_winid)
             lfCmd("call nvim_win_set_option(%d, 'winhighlight', 'Normal:Lf_hl_popup_window')" % self._popup_winid)
 
             self._tabpage_object = vim.current.tabpage

@@ -347,7 +347,7 @@ class FunctionExplManager(Manager):
             return
 
         line = self._getInstance().currentLine
-        if self._preview_in_popup:
+        if self._preview_in_popup():
             self._previewInPopup(line)
             return
 
