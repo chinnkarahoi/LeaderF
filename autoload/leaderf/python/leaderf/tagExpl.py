@@ -176,6 +176,29 @@ class TagExplManager(Manager):
                 id = int(lfEval('''matchadd('Lf_hl_tagKeyword', '\(;"\t.\{-}\)\@<=%s:')''' % i))
                 self._match_ids.append(id)
 
+    def _previewInPopup(self, *args, **kwargs):
+        if len(args) == 0:
+            return
+
+        line = args[0]
+        # {tagname}<Tab>{tagfile}<Tab>{tagaddress}[;"<Tab>{tagfield}..]
+        tagname, file, right = line.split('\t', 2)
+        res = right.split(';"\t', 1)
+        tagaddress = res[0]
+
+        if tagaddress[0] in '/?':
+            with open(file) as f:
+                content = f.readlines()
+            tagaddress = tagaddress[2:-2]
+            index = [x + 1 for x in range(len(content)) if tagaddress in content[x]]
+            tagaddress = str(index[0])
+        a = [re.findall(tagaddress, line) for line in open(file)]
+        if not os.path.isabs(file):
+            file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
+            file = os.path.normpath(lfEncode(file))
+
+        buf_number = lfEval("bufadd('{}')".format(escQuote(file)))
+        self._createPopupPreview("", buf_number, tagaddress)
     def _beforeExit(self):
         super(TagExplManager, self)._beforeExit()
         for k, v in self._cursorline_dict.items():

@@ -523,7 +523,7 @@ class GtagsExplorer(Explorer):
         """
         self._accept_dotfiles = "--accept-dotfiles " if lfEval("get(g:, 'Lf_GtagsAcceptDotfiles', '0')") == '1' else ""
         self._skip_unreadable = "--skip-unreadable " if lfEval("get(g:, 'Lf_GtagsSkipUnreadable', '0')") == '1' else ""
-        self._skip_symlink = "--skip-symlink%s " % ('=' + lfEval("get(g:, 'Lf_GtagsSkipSymlink', '')")
+        self._skip_symlink = "%s " % ('=' + lfEval("get(g:, 'Lf_GtagsSkipSymlink', '')")
                                 if lfEval("get(g:, 'Lf_GtagsSkipSymlink', '')") != '' else "")
         self._gtagsconf = lfEval("get(g:, 'Lf_Gtagsconf', '')")
         self._gtagslabel = lfEval("get(g:, 'Lf_Gtagslabel', 'default')")
