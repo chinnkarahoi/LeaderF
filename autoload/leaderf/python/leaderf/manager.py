@@ -2376,16 +2376,21 @@ class Manager(object):
                 if self._getExplorer().supportsMulti():
                     self.selectMulti()
             elif equal(cmd, '<C-A>'):
-                if lfEval('g:Lf_PreviewResultToggle') == '1':
-                    lfCmd("let g:Lf_PreviewInPopup = 1 - g:Lf_PreviewInPopup")
+                if lfEval('g:Lf_PreviewResultToggle') == '1' and lfEval('g:Lf_PreviewInPopup') == '1':
+                    lfCmd("let g:Lf_PreviewResultToggle = 0")
                 else:
                     lfCmd("let g:Lf_PreviewResultToggle = 1")
+                    lfCmd("let g:Lf_PreviewInPopup = 1")
                 self._closePreviewPopup()
                 self._previewResult(False)
             elif equal(cmd, '<C-L>'):
                 self.clearSelections()
             elif equal(cmd, '<C-P>'):
-                lfCmd("let g:Lf_PreviewResultToggle = 1 - g:Lf_PreviewResultToggle")
+                if lfEval('g:Lf_PreviewResultToggle') == '1' and lfEval('g:Lf_PreviewInPopup') == '0':
+                    lfCmd("let g:Lf_PreviewResultToggle = 0")
+                else:
+                    lfCmd("let g:Lf_PreviewResultToggle = 1")
+                    lfCmd("let g:Lf_PreviewInPopup = 0")
                 self._ctrlp_pressed = True
                 self._previewResult(False)
                 self._ctrlp_pressed = False
