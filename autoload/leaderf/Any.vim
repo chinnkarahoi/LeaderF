@@ -332,8 +332,9 @@ function! leaderf#Any#start(bang, args) abort
     else
         let g:Lf_PreviewResultToggle = g:Lf_PreviewResultToggleInit
         let @w=expand('<cword>')
-        let g:Lf_SessionFilePath = g:Lf_SessionDirectory . '/' . substitute(getcwd(),'/','@','g') . '@' . 'activeSession.vim'
-        exec "mksession! " . g:Lf_SessionFilePath
+        " let g:Lf_SessionFilePath = g:Lf_SessionDirectory . '/' . substitute(getcwd(),'/','@','g') . '@' . 'activeSession.vim'
+        " exec "mksession! " . g:Lf_SessionFilePath
+        norm mA
         call leaderf#LfPy("anyHub.start(r''' ".a:args." ''', bang=".a:bang.")")
         let g:Lf_PreviewResultToggle = 0
     endif
