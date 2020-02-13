@@ -71,18 +71,9 @@ class HistoryExplManager(Manager):
     def _acceptSelection(self, *args, **kwargs):
         if len(args) == 0:
             return
-        cmd = args[0]
-        if self._getExplorer().getHistoryType() == "Cmd_History":
-            try:
-                lfCmd(cmd)
-            except vim.error as e:
-                lfPrintError(e)
-            lfCmd("call histadd(':', '%s')" % escQuote(cmd))
-        elif self._getExplorer().getHistoryType() == "Search_History":
-            try:
-                lfCmd("/%s" % cmd)
-            except vim.error as e:
-                lfPrintError(e)
+        cmd = ':' + escQuote(args[0])
+        lfCmd("call feedkeys('%s', 'n')" % (cmd))
+        return
 
     def _getDigest(self, line, mode):
         """
@@ -115,7 +106,7 @@ class HistoryExplManager(Manager):
         return help
 
     def _cmdExtension(self, cmd):
-        if equal(cmd, '<C-o>'):
+        if equal(cmd, '<CR>'):
             self.editHistory()
         return True
 
