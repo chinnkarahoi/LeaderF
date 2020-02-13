@@ -33,9 +33,13 @@ class LineExplorer(Explorer):
 
     def _getLineList(self, buffer):
         bufname = os.path.basename(buffer.name)
+        current_line = int(lfEval("getbufinfo(%d)[0]['lnum']" % buffer.number)) - 1
         if sys.version_info >= (3, 0):
             return ["%s\t[%s:%d %d]" % (line.encode('utf-8', "replace").decode('utf-8', "replace"), bufname, i, buffer.number)
-                    for i, line in enumerate(buffer, 1) if line and not line.isspace()]
+                    for i, line in
+                        list(enumerate(buffer[current_line:], current_line + 1)) +
+                        list(enumerate(buffer[:current_line], 1))
+                             if line and not line.isspace()]
         else:
             return ["%s\t[%s:%d %d]" % (line, bufname, i, buffer.number)
                     for i, line in enumerate(buffer, 1) if line and not line.isspace()]
