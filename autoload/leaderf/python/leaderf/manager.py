@@ -1584,7 +1584,7 @@ class Manager(object):
     def _accept(self, file, mode, *args, **kwargs):
         if file:
             # lfCmd("silent! wincmd p | silent! tabonly | silent! source " + lfEval('g:Lf_SessionFilePath'))
-            lfCmd('norm `A')
+            lfCmd('norm `Z')
             if mode == '':
                 pass
             elif mode == 'h':
@@ -2341,7 +2341,7 @@ class Manager(object):
                 self._cli.writeHistory(self._getExplorer().getStlCategory())
                 self.quit()
                 # lfCmd("silent! tabonly | silent! source " + lfEval('g:Lf_SessionFilePath'))
-                lfCmd('norm `A')
+                lfCmd('norm `Z')
                 break
             elif equal(cmd, '<Tab>'):   # switch to Normal mode
                 self._current_mode = 'NORMAL'
