@@ -511,7 +511,7 @@ class LfInstance(object):
             lfCmd("call win_execute(%d, 'setlocal undolevels=-1')" % self._popup_winid)
             lfCmd("call win_execute(%d, 'setlocal noswapfile')" % self._popup_winid)
             lfCmd("call win_execute(%d, 'setlocal nolist')" % self._popup_winid)
-            lfCmd("call win_execute(%d, 'setlocal number norelativenumber')" % self._popup_winid)
+            lfCmd("call win_execute(%d, 'setlocal nonumber norelativenumber')" % self._popup_winid)
             lfCmd("call win_execute(%d, 'setlocal nospell')" % self._popup_winid)
             lfCmd("call win_execute(%d, 'setlocal nofoldenable')" % self._popup_winid)
             lfCmd("call win_execute(%d, 'setlocal foldmethod=manual')" % self._popup_winid)
