@@ -294,7 +294,7 @@ class LfInstance(object):
             lfCmd("setlocal foldcolumn=0")
             lfCmd("setlocal winfixheight")
         else:
-            lfCmd("setlocal number")
+            lfCmd("setlocal nonumber")
             lfCmd("setlocal foldcolumn=0")
             lfCmd("setlocal nowinfixheight")
         lfCmd("silent! setlocal filetype=leaderf")
