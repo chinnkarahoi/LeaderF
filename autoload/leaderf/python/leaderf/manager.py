@@ -106,6 +106,7 @@ class Manager(object):
         self._cursorline_dict = {}
         self._empty_query = lfEval("get(g:, 'Lf_EmptyQuery', 1)") == '1'
         self._preview_winid = 0
+        self._is_previewed = False
         self._match_ids = []
         self._vim_file_autoloaded = False
         self._getExplClass()
@@ -138,10 +139,9 @@ class Manager(object):
             lfCmd("argadd %s" % escSpecial(file))
 
     def _issue_422_set_option(self):
-        if lfEval("has('nvim')") == '1':
+        if lfEval("has('nvim')") == '1' and self._is_previewed:
             lfCmd("silent! setlocal number<")
             lfCmd("silent! setlocal relativenumber<")
-            lfCmd("silent! setlocal foldlevel<")
             lfCmd("silent! setlocal cursorline<")
             lfCmd("silent! setlocal colorcolumn<")
             lfCmd("silent! setlocal winhighlight<")
@@ -413,6 +413,7 @@ class Manager(object):
     #**************************************************************
 
     def _createPopupModePreview(self, title, buf_number, line_nr, jump_cmd):
+        self._is_previewed = True
         if lfEval("has('nvim')") == '1':
             width = int(lfEval("get(g:, 'Lf_PreviewPopupWidth', 0)"))
             if width == 0:
@@ -472,10 +473,13 @@ class Manager(object):
 
             lfCmd("call nvim_win_set_option(%d, 'number', v:false)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'relativenumber', v:false)" % self._preview_winid)
-            lfCmd("call nvim_win_set_option(%d, 'foldlevel', 1000)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'cursorline', v:true)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'colorcolumn', '')" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'winhighlight', 'Normal:Lf_hl_popup_window')" % self._preview_winid)
+            cur_winid = lfEval("win_getid()")
+            lfCmd("noautocmd call win_gotoid(%d)" % self._preview_winid)
+            lfCmd("silent! %foldopen!")
+            lfCmd("noautocmd call win_gotoid(%s)" % cur_winid)
             lfCmd("redraw!")
         else:
             popup_window = self._getInstance().window
@@ -568,6 +572,7 @@ class Manager(object):
             lfCmd("call win_execute(%d, 'setlocal wincolor=Lf_hl_popup_window')" % self._preview_winid)
 
     def _createPopupPreview(self, title, buf_number, line_nr, jump_cmd=''):
+        self._is_previewed = True
         buf_number = int(buf_number)
         line_nr = int(line_nr)
 
@@ -627,9 +632,12 @@ class Manager(object):
                 lfCmd("""call nvim_win_set_cursor(%d, [%d, 1])""" % (self._preview_winid, line_nr))
             lfCmd("call nvim_win_set_option(%d, 'number', v:false)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'relativenumber', v:false)" % self._preview_winid)
-            lfCmd("call nvim_win_set_option(%d, 'foldlevel', 1000)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'cursorline', v:true)" % self._preview_winid)
             lfCmd("call nvim_win_set_option(%d, 'colorcolumn', '')" % self._preview_winid)
+            cur_winid = lfEval("win_getid()")
+            lfCmd("noautocmd call win_gotoid(%d)" % self._preview_winid)
+            lfCmd("silent! %foldopen!")
+            lfCmd("noautocmd call win_gotoid(%s)" % cur_winid)
         else:
             preview_pos = lfEval("get(g:, 'Lf_PreviewHorizontalPosition', 'cursor')")
             if preview_pos.lower() == 'center':
@@ -1055,7 +1063,7 @@ class Manager(object):
                                             is_name_only=False, sort_results=False)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Tag", "Rg", "Filetype",
-                        "Command"]:
+                        "Command", "Window"]:
                     filter_method = partial(fuzzyEngine.fuzzyMatchEx, engine=self._fuzzy_engine, pattern=pattern,
                                             is_name_only=True, sort_results=False)
                 else:
@@ -1084,7 +1092,7 @@ class Manager(object):
                                             fuzzy_match.getWeight2)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Tag", "Rg", "Filetype",
-                        "Command"]:
+                        "Command", "Window"]:
                     filter_method = partial(self._fuzzyFilterEx,
                                             self._cli.isFullPath,
                                             fuzzy_match.getWeight3)
@@ -1222,7 +1230,7 @@ class Manager(object):
                                                 is_name_only=True, sort_results=True)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Tag", "Filetype",
-                        "Command"]:
+                        "Command", "Window"]:
                     return_index = True
                     filter_method = partial(fuzzyEngine.fuzzyMatchEx, engine=self._fuzzy_engine, pattern=pattern,
                                             is_name_only=True, sort_results=True)
@@ -1254,7 +1262,7 @@ class Manager(object):
                                             fuzzy_match.getWeight2)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Rg", "Filetype",
-                        "Command"]:
+                        "Command", "Window"]:
                     filter_method = partial(self._fuzzyFilter,
                                             self._cli.isFullPath,
                                             fuzzy_match.getWeight3)
@@ -2116,7 +2124,7 @@ class Manager(object):
         if self._is_content_list:
             if self._cli.pattern and (self._index < len(self._content) or len(self._cb_content) > 0):
                 if self._fuzzy_engine:
-                    step = 10000 * cpu_count
+                    step = 40000 * cpu_count
                 elif is_fuzzyMatch_C:
                     step = 10000
                 else:
@@ -2187,7 +2195,7 @@ class Manager(object):
             if self._cli.pattern:
                 if self._index < len(self._content) or len(self._cb_content) > 0:
                     if self._fuzzy_engine:
-                        step = 20000 * cpu_count
+                        step = 40000 * cpu_count
                     elif is_fuzzyMatch_C:
                         step = 10000
                     else:
@@ -2216,7 +2224,7 @@ class Manager(object):
             if self._cli.pattern:
                 if self._index < cur_len or len(self._cb_content) > 0:
                     if self._fuzzy_engine:
-                        step = 20000 * cpu_count
+                        step = 40000 * cpu_count
                     elif is_fuzzyMatch_C:
                         step = 10000
                     else:
