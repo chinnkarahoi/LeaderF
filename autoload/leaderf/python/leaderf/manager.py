@@ -1592,7 +1592,8 @@ class Manager(object):
     def _accept(self, file, mode, *args, **kwargs):
         if file:
             # lfCmd("silent! wincmd p | silent! tabonly | silent! source " + lfEval('g:Lf_SessionFilePath'))
-            lfCmd('norm `Z')
+            if mode != '':
+                lfCmd('norm `Z')
             if mode == '':
                 pass
             elif mode == 'h':
