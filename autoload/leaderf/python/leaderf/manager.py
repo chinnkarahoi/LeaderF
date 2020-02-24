@@ -1856,9 +1856,21 @@ class Manager(object):
                 lfCmd("exec 'norm!'.v:mouse_col.'|'")
 
         line_nr = self._getInstance().window.cursor[0]
-        if line_nr <= self._help_length:
-            lfCmd("norm! j")
-            return
+        if self._getInstance().isReverseOrder():
+            if line_nr > len(self._getInstance().buffer) - self._help_length:
+                lfCmd("norm! k")
+                return
+        else:
+            if line_nr <= self._help_length:
+                if self._getInstance().getWinPos() == 'popup':
+                    lfCmd("call win_execute({}, 'norm! j')".format(self._getInstance().getPopupWinId()))
+                else:
+                    lfCmd("norm! j")
+
+                if self._getInstance().getWinPos() in ('popup', 'floatwin'):
+                    self._cli.buildPopupPrompt()
+
+                return
 
         if line_nr in self._selections:
             if self._getInstance().getWinPos() == 'popup':
@@ -2267,6 +2279,7 @@ class Manager(object):
             lfCmd("call timer_stop(%s)" % self._timer_id)
             self._timer_id = None
 
+        self.clearSelections()
         self._hideHelp()
         self._resetHighlights()
 
