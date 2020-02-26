@@ -96,7 +96,8 @@ class LfCli(object):
 
     def _paste(self, reg = ''):
         for ch in reg:
-            self._insert(ch)
+            if ch != '\n':
+                self._insert(ch)
 
     def _backspace(self):
         if self._cursor_pos > 0:
@@ -713,25 +714,25 @@ class LfCli(object):
                         self._buildPattern()
                         yield '<Update>'
                     elif equal(cmd, '<BS>') or equal(cmd, '<C-H>'):
-                        if not self._pattern and self._refine == False:
+                        if not self._pattern:
                             continue
                         self._backspace()
                         self._buildPattern()
                         yield '<Shorten>'
                     elif equal(cmd, '<C-U>'):
-                        if not self._pattern and self._refine == False:
+                        if not self._pattern:
                             continue
                         self._clearLeft()
                         self._buildPattern()
                         yield '<Shorten>'
                     elif equal(cmd, '<C-W>'):
-                        if not self._pattern and self._refine == False:
+                        if not self._pattern:
                             continue
                         self._delLeftWord()
                         self._buildPattern()
                         yield '<Shorten>'
                     elif equal(cmd, '<Del>'):
-                        if not self._pattern and self._refine == False:
+                        if not self._pattern:
                             continue
                         self._delete()
                         self._buildPattern()
