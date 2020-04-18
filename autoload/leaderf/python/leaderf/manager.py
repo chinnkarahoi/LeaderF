@@ -1619,7 +1619,10 @@ class Manager(object):
         if file:
             # lfCmd("silent! wincmd p | silent! tabonly | silent! source " + lfEval('g:Lf_SessionFilePath'))
             if mode != '':
-                lfCmd('norm `Z')
+                try:
+                    lfCmd('norm `Z')
+                except:
+                    pass
             lfCmd("norm! m'")
 
             if mode == '':
@@ -2403,7 +2406,10 @@ class Manager(object):
                 self._cli.writeHistory(self._getExplorer().getStlCategory())
                 self.quit()
                 # lfCmd("silent! tabonly | silent! source " + lfEval('g:Lf_SessionFilePath'))
-                lfCmd('norm `Z')
+                try:
+                    lfCmd('norm `Z')
+                except:
+                    pass
                 break
             elif equal(cmd, '<Tab>'):   # switch to Normal mode
                 self._current_mode = 'NORMAL'
