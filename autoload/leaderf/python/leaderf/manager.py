@@ -16,6 +16,7 @@ from .cli import LfCli
 from .utils import *
 from .fuzzyMatch import FuzzyMatch
 from .asyncExecutor import AsyncExecutor
+from .devicons import removeDevIcons
 
 is_fuzzyEngine_C = False
 try:
@@ -126,6 +127,17 @@ class Manager(object):
     def _defineMaps(self):
         pass
 
+    def _defineCommonMaps(self):
+        normal_map = lfEval("get(g:, 'Lf_NormalMap', {})")
+        if "_" not in normal_map: 
+            return
+
+        for [lhs, rhs] in normal_map["_"]:
+            # If a buffer-local mapping does not exist, map it
+            maparg = lfEval("maparg('{}', 'n', 0, 1)".format(lhs))
+            if maparg == {} or maparg.get("buffer", "0") == "0" :
+                lfCmd("nnoremap <buffer> <silent> {} {}".format(lhs, rhs))
+
     def _cmdExtension(self, cmd):
         """
         this function can be overridden to add new cmd
@@ -133,6 +145,7 @@ class Manager(object):
         """
         pass
 
+    @removeDevIcons
     def _argaddFiles(self, files):
         # It will raise E480 without 'silent!'
         lfCmd("silent! argdelete *")
@@ -148,26 +161,7 @@ class Manager(object):
             lfCmd("silent! setlocal winhighlight<")
 
     def _acceptSelection(self, *args, **kwargs):
-        if len(args) == 0:
-            return
-        file = args[0]
-        try:
-            if not os.path.isabs(file):
-                file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
-                file = os.path.normpath(lfEncode(file))
-
-            if kwargs.get("mode", '') != 't' or (lfEval("get(g:, 'Lf_DiscardEmptyBuffer', 0)") == '1'
-                    and len(vim.tabpages) == 1 and len(vim.current.tabpage.windows) == 1
-                    and vim.current.buffer.name == '' and len(vim.current.buffer) == 1
-                    and vim.current.buffer[0] == '' and not vim.current.buffer.options["modified"]):
-                if vim.current.buffer.options["modified"]:
-                    lfCmd("hide edit %s" % escSpecial(file))
-                else:
-                    lfCmd("edit %s" % escSpecial(file))
-            else:
-                lfCmd("tab drop %s" % escSpecial(file))
-        except vim.error as e: # E37
-            lfPrintError(e)
+        pass
 
     def _getDigest(self, line, mode):
         """
@@ -266,6 +260,7 @@ class Manager(object):
 
         if self._getInstance().getWinPos() != 'popup':
             self._defineMaps()
+            self._defineCommonMaps()
 
             id = int(lfEval("matchadd('Lf_hl_cursorline', '.*\%#.*', 9)"))
             self._match_ids.append(id)
@@ -425,8 +420,8 @@ class Manager(object):
             lfCmd("silent! call bufload(%d)" % buf_number)
             buffer_len = len(vim.buffers[buf_number])
             float_window = self._getInstance().window
-            float_win_pos = lfEval("nvim_win_get_position(%d)" % float_window.id)
-            float_win_row, float_win_col = [int(i) for i in float_win_pos]
+            float_win_row = int(float(lfEval("nvim_win_get_config(%d).row" % float_window.id)))
+            float_win_col = int(float(lfEval("nvim_win_get_config(%d).col" % float_window.id)))
             preview_pos = lfEval("get(g:, 'Lf_PopupPreviewPosition', 'top')")
             if preview_pos.lower() == 'bottom':
                 anchor = "NW"
@@ -796,6 +791,14 @@ class Manager(object):
 
         self._help_length = 0
         self._getInstance().refreshPopupStatusline()
+
+    def _inHelpLines(self):
+        if self._getInstance().isReverseOrder():
+            if self._getInstance().window.cursor[0] > len(self._getInstance().buffer) - self._help_length:
+                return True
+        elif self._getInstance().window.cursor[0] <= self._help_length:
+            return True
+        return False
 
     def _getExplorer(self):
         if self._explorer is None:
@@ -1224,7 +1227,7 @@ class Manager(object):
                     else:
                         filter_method = partial(fuzzyEngine.fuzzyMatchPart, engine=self._fuzzy_engine, pattern=pattern, category=fuzzyEngine.Category_File,
                                                 param=fuzzyEngine.createParameter(1), is_name_only=True, sort_results=True)
-                elif self._getExplorer().getStlCategory() in ["Rg"]:
+                elif self._getExplorer().getStlCategory() == "Rg":
                     return_index = False
                     if "--match-path" in self._arguments:
                         filter_method = partial(fuzzyEngine.fuzzyMatch, engine=self._fuzzy_engine, pattern=pattern,
@@ -1247,6 +1250,10 @@ class Manager(object):
                         result_format = 2
                     filter_method = partial(fuzzyEngine.fuzzyMatchPart, engine=self._fuzzy_engine, pattern=pattern, category=fuzzyEngine.Category_Gtags,
                                             param=fuzzyEngine.createGtagsParameter(0, result_format, self._match_path), is_name_only=True, sort_results=True)
+                elif self._getExplorer().getStlCategory() == "Line":
+                    return_index = False
+                    filter_method = partial(fuzzyEngine.fuzzyMatchPart, engine=self._fuzzy_engine, pattern=pattern, category=fuzzyEngine.Category_Line,
+                                            param=fuzzyEngine.createParameter(1), is_name_only=True, sort_results=True)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Filetype",
                         "Command", "Window"]:
@@ -1613,6 +1620,8 @@ class Manager(object):
             # lfCmd("silent! wincmd p | silent! tabonly | silent! source " + lfEval('g:Lf_SessionFilePath'))
             if mode != '':
                 lfCmd('norm `Z')
+            lfCmd("norm! m'")
+
             if mode == '':
                 pass
             elif mode == 'h':
@@ -1672,6 +1681,9 @@ class Manager(object):
             for i in sorted(self._selections.keys()):
                 files.append(self._getInstance().buffer[i-1])
             if "--stayOpen" in self._arguments:
+                if self._getInstance().window.valid:
+                    self._getInstance().cursorRow = self._getInstance().window.cursor[0]
+                self._getInstance().helpLength = self._help_length
                 try:
                     vim.current.tabpage, vim.current.window, vim.current.buffer = self._getInstance().getOriginalPos()
                 except vim.error: # error if original buffer is an No Name buffer
@@ -1705,6 +1717,9 @@ class Manager(object):
             need_exit = self._needExit(file, self._arguments)
             if need_exit:
                 if "--stayOpen" in self._arguments:
+                    if self._getInstance().window.valid:
+                        self._getInstance().cursorRow = self._getInstance().window.cursor[0]
+                    self._getInstance().helpLength = self._help_length
                     try:
                         vim.current.tabpage, vim.current.window, vim.current.buffer = self._getInstance().getOriginalPos()
                     except vim.error: # error if original buffer is an No Name buffer
@@ -2054,6 +2069,7 @@ class Manager(object):
                     self._cli._buildPrompt()
                 self._getInstance().buffer.options['modifiable'] = False
                 self._bangEnter()
+                self._getInstance().mimicCursor()
 
                 if not self._cli.pattern and empty_query:
                     self._gotoFirstLine()
@@ -2106,6 +2122,7 @@ class Manager(object):
                 lfCmd("echo")
                 self._getInstance().buffer.options['modifiable'] = False
                 self._bangEnter()
+                self._getInstance().mimicCursor()
         else:
             self._is_content_list = False
             self._callback = partial(self._workInIdle, content)
@@ -2124,6 +2141,7 @@ class Manager(object):
                 lfCmd("echo")
                 self._getInstance().buffer.options['modifiable'] = False
                 self._bangEnter()
+                self._getInstance().mimicCursor()
 
     def _readContent(self, content):
         try:

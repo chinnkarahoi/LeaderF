@@ -5,6 +5,7 @@ import vim
 import re
 import sys
 import time
+import platform
 from datetime import datetime
 from datetime import timedelta
 from functools import wraps
@@ -58,6 +59,13 @@ class LfCli(object):
         self._running_status = 0
         self._input_buf_namespace = None
         self._setDefaultMode()
+        self._additional_prompt_string = ''
+        self._spin_symbols = lfEval("get(g:, 'Lf_SpinSymbols', [])")
+        if not self._spin_symbols:
+            if platform.system() == "Linux":
+                self._spin_symbols = ['△', '▲', '▷', '▶', '▽', '▼', '◁', '◀']
+            else:
+                self._spin_symbols = ['🌘', '🌗', '🌖', '🌕', '🌔', '🌓', '🌒', '🌑']
 
     def setInstance(self, instance):
         self._instance = instance
@@ -161,11 +169,11 @@ class LfCli(object):
         lfCmd("redraw")
         if self._is_fuzzy:
             if self._is_full_path:
-                lfCmd("echohl Constant | echon '>F> ' | echohl NONE")
+                lfCmd("echohl Constant | echon '>F> {}' | echohl NONE".format(self._additional_prompt_string))
             else:
-                lfCmd("echohl Constant | echon '>>> ' | echohl NONE")
+                lfCmd("echohl Constant | echon '>>> {}' | echohl NONE".format(self._additional_prompt_string))
         else:
-            lfCmd("echohl Constant | echon 'R>> ' | echohl NONE")
+            lfCmd("echohl Constant | echon 'R>> {}' | echohl NONE".format(self._additional_prompt_string))
 
         lfCmd("echohl Normal | echon '%s' | echohl NONE" %
               escQuote(''.join(self._cmdline[:self._cursor_pos])))
@@ -183,11 +191,11 @@ class LfCli(object):
 
         if self._is_fuzzy:
             if self._is_full_path:
-                prompt = ' >F> '
+                prompt = ' >F> {}'.format(self._additional_prompt_string)
             else:
-                prompt = ' >>> '
+                prompt = ' >>> {}'.format(self._additional_prompt_string)
         else:
-            prompt = ' R>> '
+            prompt = ' R>> {}'.format(self._additional_prompt_string)
 
         pattern = ''.join(self._cmdline)
         input_window = self._instance.getPopupInstance().input_win
@@ -205,19 +213,17 @@ class LfCli(object):
         part2 = "{}/{}".format(line_num, result_count)
         part3 = total
         sep = lfEval("g:Lf_StlSeparator.right")
-        flag = ('+', '×')
         if lfEval("g:Lf_{}_IsRunning".format(self._instance._category)) == '1':
-            spin = "{}".format(flag[self._running_status])
-            self._running_status = (self._running_status + 1) & 1
+            spin = "{}".format(self._spin_symbols[self._running_status])
+            self._running_status = (self._running_status + 1) % len(self._spin_symbols)
         else:
             spin = ""
             self._running_status = 0
 
-        if sys.version_info < (3, 0):
-            input_win_width += 2 * (len(sep) - int(lfEval("strdisplaywidth('%s')" % escQuote(sep))))
-            input_win_width += len(pattern) - int(lfEval("strdisplaywidth('%s')" % escQuote(pattern)))
-            if spin == '×':
-                input_win_width += len(spin) - int(lfEval("strdisplaywidth('%s')" % spin))
+        input_win_width += 2 * (len(sep) - int(lfEval("strdisplaywidth('%s')" % escQuote(sep))))
+        input_win_width += len(pattern) - int(lfEval("strdisplaywidth('%s')" % escQuote(pattern)))
+        input_win_width += len(spin) - int(lfEval("strdisplaywidth('%s')" % spin))
+
         part3_start = input_win_width - len(part3) - 2
         sep2_start = part3_start - len(sep)
         part2_start = sep2_start - 2 - len(part2)
@@ -343,11 +349,11 @@ class LfCli(object):
 
         if self._is_fuzzy:
             if self._is_full_path:
-                lfCmd("echohl Constant | echon '>F> ' | echohl NONE")
+                lfCmd("echohl Constant | echon '>F> {}' | echohl NONE".format(self._additional_prompt_string))
             else:
-                lfCmd("echohl Constant | echon '>>> ' | echohl NONE")
+                lfCmd("echohl Constant | echon '>>> {}' | echohl NONE".format(self._additional_prompt_string))
         else:
-            lfCmd("echohl Constant | echon 'R>> ' | echohl NONE")
+            lfCmd("echohl Constant | echon 'R>> {}' | echohl NONE".format(self._additional_prompt_string))
 
         lfCmd("echohl Normal | echon '%s' | echohl NONE" %
               escQuote(''.join(self._cmdline[:self._cursor_pos])))

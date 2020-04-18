@@ -442,11 +442,15 @@ class RgExplManager(Manager):
         try:
             if buf_number == -1:
                 if kwargs.get("mode", '') == 't':
-                    lfCmd("silent tab drop %s | %s" % (escSpecial(file), line_num))
+                    lfCmd("tab drop %s | %s" % (escSpecial(file), line_num))
                 else:
-                    lfCmd("silent hide edit +%s %s" % (line_num, escSpecial(file)))
+                    if lfEval("get(g:, 'Lf_JumpToExistingWindow', 0)") == '1':
+                        lfCmd("hide drop %s | %s" % (escSpecial(file), line_num))
+                    else:
+                        lfCmd("hide edit +%s %s" % (line_num, escSpecial(file)))
             else:
-                lfCmd("silent hide buffer +%s %s" % (line_num, buf_number))
+                lfCmd("hide buffer +%s %s" % (line_num, buf_number))
+            lfCmd("norm! ^zv")
             lfCmd("norm! zz")
 
             if vim.current.window not in self._cursorline_dict:
@@ -716,7 +720,7 @@ class RgExplManager(Manager):
 
     def deleteCurrentLine(self):
         instance = self._getInstance()
-        if instance.window.cursor[0] <= self._help_length:
+        if self._inHelpLines():
             return
         if instance.getWinPos() == 'popup':
             lfCmd("call win_execute(%d, 'setlocal modifiable')" % instance.getPopupWinId())

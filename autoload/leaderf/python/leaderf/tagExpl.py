@@ -80,7 +80,10 @@ class TagExplManager(Manager):
             if kwargs.get("mode", '') == 't':
                 lfCmd("tab drop %s" % escSpecial(tagfile))
             else:
-                lfCmd("hide edit %s" % escSpecial(tagfile))
+                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 0)") == '1':
+                    lfCmd("hide drop %s" % escSpecial(tagfile))
+                else:
+                    lfCmd("hide edit %s" % escSpecial(tagfile))
         except vim.error as e: # E37
             lfPrintError(e)
 
@@ -109,6 +112,7 @@ class TagExplManager(Manager):
 
         if lfEval("search('\V%s', 'wc')" % escQuote(tagname)) == '0':
             lfCmd("norm! ^")
+        lfCmd("norm! zv")
         lfCmd("norm! zz")
 
         if vim.current.window not in self._cursorline_dict:

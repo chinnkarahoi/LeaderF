@@ -328,14 +328,14 @@ function! leaderf#Any#parseArguments(argLead, cmdline, cursorPos) abort
     endif
 endfunction
 
+let g:Lf_PreviewResultToggle = g:Lf_PreviewResultToggleInit
 function! leaderf#Any#start(bang, args) abort
     if a:args == ""
 
     else
-        let g:Lf_PreviewResultToggle = g:Lf_PreviewResultToggleInit
         let @w=expand('<cword>')
         call leaderf#LfPy("anyHub.start(r''' ".a:args." ''', bang=".a:bang.")")
-        let g:Lf_PreviewResultToggle = 0
+        " let g:Lf_PreviewResultToggle = 0
     endif
 endfunction
 

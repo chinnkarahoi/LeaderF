@@ -1314,6 +1314,7 @@ enum
     Category_Tag,
     Category_File,
     Category_Gtags,
+    Category_Line,
 };
 
 typedef struct RgParameter
@@ -1417,6 +1418,7 @@ static void rg_getDigest(char** str, uint32_t* length, RgParameter* param)
 {
     char* s = *str;
     uint32_t len = *length;
+    char* p = NULL;
 
     if ( param->display_multi )
     {
@@ -1429,7 +1431,7 @@ static void rg_getDigest(char** str, uint32_t* length, RgParameter* param)
         {
             uint8_t colon = 0;
             uint8_t minus = 0;
-            for ( char *p = s; p < s + len; ++p )
+            for ( p = s; p < s + len; ++p )
             {
                 if ( *p == ':' )
                 {
@@ -1457,7 +1459,7 @@ static void rg_getDigest(char** str, uint32_t* length, RgParameter* param)
     else
     {
         uint8_t colon = 0;
-        for ( char *p = s; p < s + len; ++p )
+        for ( p = s; p < s + len; ++p )
         {
             if ( *p == ':' )
             {
@@ -1477,7 +1479,8 @@ static void tag_getDigest(char** str, uint32_t* length, Parameter* param)
 {
     char* s = *str;
     uint32_t len = *length;
-    for ( char *p = s; p < s + len; ++p )
+    char* p = s;
+    for ( ; p < s + len; ++p )
     {
         if ( *p == '\t' )
         {
@@ -1492,7 +1495,8 @@ static void tag_getDigest(char** str, uint32_t* length, Parameter* param)
 static void file_getDigest(char** str, uint32_t* length, Parameter* param)
 {
     char* s = *str;
-    for ( char *p = s + *length - 1; p >= s; --p )
+    char *p = s + *length - 1;
+    for ( ; p >= s; --p )
     {
         if ( *p == '/' || *p == '\\' )
         {
@@ -1507,6 +1511,7 @@ static void gtags_getDigest(char** str, uint32_t* length, GtagsParameter* param)
 {
     char* s = *str;
     uint32_t len = *length;
+    char* p = NULL;
 
     if ( param->format == 0 ) /* ctags-mod */
     {
@@ -1514,7 +1519,7 @@ static void gtags_getDigest(char** str, uint32_t* length, GtagsParameter* param)
             return;
 
         uint8_t tab = 0;
-        for ( char *p = s; p < s + len; ++p )
+        for ( p = s; p < s + len; ++p )
         {
             if ( *p == '\t' )
             {
@@ -1530,7 +1535,7 @@ static void gtags_getDigest(char** str, uint32_t* length, GtagsParameter* param)
     }
     else if ( param->format == 1 ) /* ctags */
     {
-        for ( char *p = s; p < s + len; ++p )
+        for ( p = s; p < s + len; ++p )
         {
             if ( *p == '\t' )
             {
@@ -1541,13 +1546,27 @@ static void gtags_getDigest(char** str, uint32_t* length, GtagsParameter* param)
     }
     else if ( param->format == 2 ) /* ctags-x */
     {
-        for ( char *p = s; p < s + len; ++p )
+        for ( p = s; p < s + len; ++p )
         {
             if ( *p == ' ' )
             {
                 *length = p - s;
                 return;
             }
+        }
+    }
+}
+
+static void line_getDigest(char** str, uint32_t* length, Parameter* param)
+{
+    char* s = *str;
+    char *p = s + *length - 1;
+    for ( ; p >= s; --p )
+    {
+        if ( *p == '\t' )
+        {
+            *length = p - s;
+            return;
         }
     }
 }
@@ -1740,6 +1759,9 @@ static PyObject* fuzzyEngine_fuzzyMatchPart(PyObject* self, PyObject* args, PyOb
                 gtags_getDigest(&s->str, &s->len, param);
                 break;
             }
+            case Category_Line:
+                line_getDigest(&s->str, &s->len, (Parameter*)PyCapsule_GetPointer(py_param, NULL));
+                break;
             }
         }
 
@@ -1851,6 +1873,12 @@ PyMODINIT_FUNC PyInit_fuzzyEngine(void)
         return NULL;
     }
 
+    if ( PyModule_AddObject(module, "Category_Line", Py_BuildValue("I", Category_Line)) )
+    {
+        Py_DECREF(module);
+        return NULL;
+    }
+
     return module;
 }
 
@@ -1883,6 +1911,12 @@ PyMODINIT_FUNC initfuzzyEngine(void)
     }
 
     if ( PyModule_AddObject(module, "Category_Gtags", Py_BuildValue("I", Category_Gtags)) )
+    {
+        Py_DECREF(module);
+        return;
+    }
+
+    if ( PyModule_AddObject(module, "Category_Line", Py_BuildValue("I", Category_Line)) )
     {
         Py_DECREF(module);
         return;
