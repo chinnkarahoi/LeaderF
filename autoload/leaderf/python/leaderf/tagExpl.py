@@ -192,8 +192,11 @@ class TagExplManager(Manager):
         file = lfEval('getcwd()') + '/' + file
 
         if tagaddress[0] in '/?':
-            with open(file) as f:
-                content = f.readlines()
+            try:
+                with open(file) as f:
+                    content = f.readlines()
+            except:
+                return
             tagaddress = tagaddress[2:-2]
             tagaddress = tagaddress.replace('?','.?')
             tagaddress = tagaddress.replace('\\','.?')
