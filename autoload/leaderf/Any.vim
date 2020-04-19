@@ -328,7 +328,9 @@ function! leaderf#Any#parseArguments(argLead, cmdline, cursorPos) abort
     endif
 endfunction
 
-let g:Lf_PreviewResultToggle = g:Lf_PreviewResultToggleInit
+if !exists("g:Lf_PreviewResultToggle")
+  let g:Lf_PreviewResultToggle = 0
+endif
 function! leaderf#Any#start(bang, args) abort
     if a:args == ""
 
