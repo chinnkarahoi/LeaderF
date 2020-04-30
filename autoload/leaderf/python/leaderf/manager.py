@@ -4,6 +4,7 @@
 import vim
 import os
 import sys
+import json
 import time
 import operator
 import itertools
@@ -380,7 +381,8 @@ class Manager(object):
             lfCmd("autocmd! BufwinEnter <buffer> setlocal cursorline<")
             lfCmd("augroup END")
         finally:
-            vim.current.tabpage, vim.current.window, vim.current.buffer = cur_pos
+            if self._getInstance().getWinPos() != 'popup':
+                vim.current.tabpage, vim.current.window, vim.current.buffer = cur_pos
             vim.options['eventignore'] = saved_eventignore
 
     def _restoreOrigCwd(self):
@@ -561,7 +563,7 @@ class Manager(object):
                 options["maxheight"] = maxheight
                 options["minheight"] = maxheight
 
-            lfCmd("silent! let winid = popup_create(%d, %s)" % (buf_number, str(options)))
+            lfCmd("silent! let winid = popup_create(%d, %s)" % (buf_number, json.dumps(options)))
             self._preview_winid = int(lfEval("winid"))
             if jump_cmd:
                 lfCmd("""call win_execute(%d, '%s')""" % (self._preview_winid, escQuote(jump_cmd)))
@@ -683,7 +685,7 @@ class Manager(object):
                 options["maxheight"] = maxheight
                 options["minheight"] = maxheight
 
-            lfCmd("silent! let winid = popup_create(%d, %s)" % (buf_number, str(options)))
+            lfCmd("silent! let winid = popup_create(%d, %s)" % (buf_number, json.dumps(options)))
             self._preview_winid = int(lfEval("winid"))
             if jump_cmd:
                 lfCmd("""call win_execute(%d, '%s')""" % (self._preview_winid, escQuote(jump_cmd)))
@@ -1319,15 +1321,15 @@ class Manager(object):
         elif use_fuzzy_engine:
             if step == 0:
                 if return_index == True:
-                    step = 20000 * cpu_count
+                    step = 30000 * cpu_count
                 else:
-                    step = 40000 * cpu_count
+                    step = 60000 * cpu_count
 
             _, self._result_content = self._filter(step, filter_method, content, is_continue, True, return_index)
         else:
             if step == 0:
                 if use_fuzzy_match_c:
-                    step = 40000
+                    step = 60000
                 elif self._getExplorer().supportsNameOnly() and self._cli.isFullPath:
                     step = 6000
                 else:
@@ -2043,7 +2045,6 @@ class Manager(object):
 
         self._start_time = time.time()
         self._bang_start_time = self._start_time
-        self._status_start_time = self._start_time
         self._bang_count = 0
 
         self._read_content_exception = None
@@ -2186,7 +2187,7 @@ class Manager(object):
         if self._is_content_list:
             if self._cli.pattern and (self._index < len(self._content) or len(self._cb_content) > 0):
                 if self._fuzzy_engine:
-                    step = 40000 * cpu_count
+                    step = 60000 * cpu_count
                 elif is_fuzzyMatch_C:
                     step = 10000
                 else:
@@ -2257,7 +2258,7 @@ class Manager(object):
             if self._cli.pattern:
                 if self._index < len(self._content) or len(self._cb_content) > 0:
                     if self._fuzzy_engine:
-                        step = 40000 * cpu_count
+                        step = 60000 * cpu_count
                     elif is_fuzzyMatch_C:
                         step = 10000
                     else:
@@ -2271,9 +2272,7 @@ class Manager(object):
             if time.time() - self._start_time > 0.1:
                 self._start_time = time.time()
                 self._getInstance().setStlTotal(cur_len//self._getUnit())
-                if time.time() - self._status_start_time > 0.45:
-                    self._status_start_time = time.time()
-                    self._getInstance().setStlRunning(True)
+                self._getInstance().setStlRunning(True)
 
                 if self._cli.pattern:
                     self._getInstance().setStlResultsCount(len(self._result_content))
@@ -2286,7 +2285,7 @@ class Manager(object):
             if self._cli.pattern:
                 if self._index < cur_len or len(self._cb_content) > 0:
                     if self._fuzzy_engine:
-                        step = 40000 * cpu_count
+                        step = 60000 * cpu_count
                     elif is_fuzzyMatch_C:
                         step = 10000
                     else:
