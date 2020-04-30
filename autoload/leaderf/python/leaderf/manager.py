@@ -362,7 +362,10 @@ class Manager(object):
         line = self._getInstance().currentLine
 
         if self._preview_in_popup():
-            self._previewInPopup(line)
+            try:
+                self._previewInPopup(line)
+            except:
+                pass
             return
 
         orig_pos = self._getInstance().getOriginalPos()
@@ -948,7 +951,10 @@ class Manager(object):
             self._regexSearch(content, is_continue, step)
 
         if self._getExplorer().getStlCategory() not in ["File"]:
-            self._previewResult(False)
+            try:
+                self._previewResult(False)
+            except:
+                pass
 
     def _filter(self, step, filter_method, content, is_continue,
                 use_fuzzy_engine=False, return_index=False):

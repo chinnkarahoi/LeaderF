@@ -381,6 +381,8 @@ class AnyExplManager(Manager):
                     self._createPopupPreview("", buf_number, line_num, lfBytes2Str(jump_cmd) if not self._has_nvim else jump_cmd)
             except vim.error as err:
                 raise Exception("Error occurred in user defined %s: %s" % (str(preview), err))
+            finally:
+                pass
 
 class OptionalAction(argparse.Action):
     def __init__(self,

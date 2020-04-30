@@ -42,6 +42,7 @@ class WindowExplorer(Explorer):
 
                 if not buf_name:
                     buf_name = "[No Name]"
+                    continue
                 if lfEval("g:Lf_ShowRelativePath") == "1":
                     buf_name = lfRelpath(buf_name)
 
