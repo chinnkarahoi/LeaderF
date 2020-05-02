@@ -740,7 +740,9 @@ class LfCli(object):
                             self._buildPattern()
                             yield '<Mode>'
                     elif equal(cmd, '<C-R>'):
-                        self._paste(lfEval("@w"))
+                        reg = lfEval("getchar()")
+                        reg = chr(int(reg)).replace(' ', '')
+                        self._paste(lfEval("@" + reg))
                         self._buildPattern()
                         yield '<Update>'
                     elif equal(cmd, '<C-V>') or equal(cmd, '<S-Insert>'):
