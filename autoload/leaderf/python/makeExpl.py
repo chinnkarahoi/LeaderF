@@ -14,11 +14,14 @@ from leaderf.manager import *
 # MakeExplorer
 #*****************************************************
 class MakeExplorer(Explorer):
+    consumer = ""
     def __init__(self):
         pass
 
     def getContent(self, *args, **kwargs):
-        result = subprocess.run(['makelist'], stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')[:-1]
+        provider = kwargs.get("arguments", {}).get("--provider", [])[0]
+        MakeExplorer.consumer = kwargs.get("arguments", {}).get("--consumer", [])[0]
+        result = lfEval("{}()".format(provider)).splitlines()
         return result
 
     def getStlCategory(self):
@@ -45,7 +48,9 @@ class MakeExplManager(Manager):
         if len(args) == 0:
             return
         line = args[0]
-        lfCmd('FloatermNewKeep make {}'.format(line))
+        consumer = MakeExplorer.consumer
+        lfEval('{}("{}")'.format(consumer, line))
+        # lfCmd('FloatermNewKeep make {}'.format(line))
 
     def _getDigest(self, line, mode):
         """
@@ -55,7 +60,7 @@ class MakeExplManager(Manager):
         """
         if not line:
             return ''
-        return line[1:]
+        return line
 
     def _getDigestStartPos(self, line, mode):
         """
@@ -63,7 +68,7 @@ class MakeExplManager(Manager):
         Args:
             mode: 0, 1, 2, return 1
         """
-        return 1
+        return 0
 
     def _createHelp(self):
         help = []
@@ -80,26 +85,6 @@ class MakeExplManager(Manager):
 
     def _afterEnter(self):
         super(MakeExplManager, self)._afterEnter()
-        if self._getInstance().getWinPos() == 'popup':
-            lfCmd("""call win_execute(%d, 'let matchid = matchadd(''Lf_hl_makeTitle'', ''^mark line .*$'')')"""
-                    % self._getInstance().getPopupWinId())
-            id = int(lfEval("matchid"))
-            self._match_ids.append(id)
-            lfCmd("""call win_execute(%d, 'let matchid = matchadd(''Lf_hl_makeLineCol'', ''^\s*\S\+\s\+\zs\d\+\s\+\d\+'')')"""
-                    % self._getInstance().getPopupWinId())
-            id = int(lfEval("matchid"))
-            self._match_ids.append(id)
-            lfCmd("""call win_execute(%d, 'let matchid = matchadd(''Lf_hl_makeText'', ''^\s*\S\+\s\+\d\+\s\+\d\+\s*\zs.*$'')')"""
-                    % self._getInstance().getPopupWinId())
-            id = int(lfEval("matchid"))
-            self._match_ids.append(id)
-        else:
-            id = int(lfEval('''matchadd('Lf_hl_makeTitle', '^mark line .*$')'''))
-            self._match_ids.append(id)
-            id = int(lfEval('''matchadd('Lf_hl_makeLineCol', '^\s*\S\+\s\+\zs\d\+\s\+\d\+')'''))
-            self._match_ids.append(id)
-            id = int(lfEval('''matchadd('Lf_hl_makeText', '^\s*\S\+\s\+\d\+\s\+\d\+\s*\zs.*$')'''))
-            self._match_ids.append(id)
 
     def _beforeExit(self):
         super(MakeExplManager, self)._beforeExit()
@@ -113,6 +98,7 @@ class MakeExplManager(Manager):
 
         saved_eventignore = vim.options['eventignore']
         vim.options['eventignore'] = 'BufWinEnter'
+        vim.options['eventignore'] = saved_eventignore
 
 
 #*****************************************************
@@ -121,3 +107,4 @@ class MakeExplManager(Manager):
 makeExplManager = MakeExplManager()
 
 __all__ = ['makeExplManager']
+
