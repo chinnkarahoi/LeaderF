@@ -18,7 +18,7 @@ class MakeExplorer(Explorer):
         pass
 
     def getContent(self, *args, **kwargs):
-        result = subprocess.run(['ls', '-l'], stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')
+        result = subprocess.run(['makelist'], stdout=subprocess.PIPE).stdout.decode('utf-8').split('\n')[:-1]
         return result
 
     def getStlCategory(self):
@@ -45,10 +45,7 @@ class MakeExplManager(Manager):
         if len(args) == 0:
             return
         line = args[0]
-        cmd = line.split(None, 1)[0]
-        lfCmd("norm! `" + cmd)
-        lfCmd("norm! zz")
-        lfCmd("setlocal cursorline! | redraw | sleep 100m | setlocal cursorline!")
+        lfCmd('FloatermNewKeep make {}'.format(line))
 
     def _getDigest(self, line, mode):
         """
@@ -116,10 +113,6 @@ class MakeExplManager(Manager):
 
         saved_eventignore = vim.options['eventignore']
         vim.options['eventignore'] = 'BufWinEnter'
-        try:
-            self._createPopupPreview("", self._getInstance().getOriginalPos()[2].number, 0, jump_cmd=cmd)
-        finally:
-            vim.options['eventignore'] = saved_eventignore
 
 
 #*****************************************************
