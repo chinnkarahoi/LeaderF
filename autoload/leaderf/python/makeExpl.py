@@ -50,6 +50,9 @@ class MakeExplManager(Manager):
     def _defineMaps(self):
         lfCmd("call leaderf#Make#Maps()")
 
+    def _needPreview(self, preview):
+        return lfEval("get(g:, 'Lf_PreviewInPopup', 0)") == '1'
+
     def _acceptSelection(self, *args, **kwargs):
         if len(args) == 0:
             return
