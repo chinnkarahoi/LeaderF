@@ -14,8 +14,9 @@ let s:extension = {
             \   "help": "navigate the make",
             \   "manager_id": "leaderf#Make#managerId",
             \   "arguments": [
-            \        {"name": ["--provider"], "nargs": 1, "help": "provider"},
-            \        {"name": ["--consumer"], "nargs": 1, "help": "consumer"},
+            \        {"name": ["--provider"], "nargs": 1, "help": ""},
+            \        {"name": ["--consumer"], "nargs": 1, "help": ""},
+            \        {"name": ["--previewer"], "nargs": 1, "help": ""},
             \   ]
             \ }
 " In order that `Leaderf make` is available

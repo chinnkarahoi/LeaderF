@@ -18,7 +18,7 @@ class MakeExplorer(Explorer):
         pass
 
     def getContent(self, *args, **kwargs):
-        provider = kwargs.get("arguments", {}).get("--provider", [])[0]
+        provider = kwargs.get("arguments", {}).get("--provider", [""])[0]
         result = lfEval("{}()".format(provider)).splitlines()
         return result
 
@@ -36,10 +36,12 @@ class MakeExplManager(Manager):
 
     def __init__(self):
         self.consumer = ""
+        self.previewer = ""
         super(MakeExplManager, self).__init__()
 
     def startExplorer(self, win_pos, *args, **kwargs):
-        self.consumer = kwargs.get("arguments", {}).get("--consumer", [])[0]
+        self.consumer = kwargs.get("arguments", {}).get("--consumer", [""])[0]
+        self.previewer = kwargs.get("arguments", {}).get("--previewer", [""])[0]
         super(MakeExplManager, self).startExplorer(win_pos, *args, **kwargs)
 
     def _getExplClass(self):
@@ -52,7 +54,8 @@ class MakeExplManager(Manager):
         if len(args) == 0:
             return
         line = args[0]
-        lfEval('{}("{}")'.format(self.consumer, line))
+        if self.consumer != "":
+            lfEval('{}("{}")'.format(self.consumer, line))
 
     def _getDigest(self, line, mode):
         """
@@ -100,6 +103,8 @@ class MakeExplManager(Manager):
         vim.options['eventignore'] = 'BufWinEnter'
         try:
             line = args[0]
+            if self.previewer != "":
+                line = lfEval('{}("{}")'.format(self.previewer, line))
             if os.path.isfile(line):
                 buf_number = lfEval("bufadd('{}')".format(escQuote(line)))
                 self._createPopupPreview(line, buf_number, 0)
