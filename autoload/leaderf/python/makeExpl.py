@@ -14,13 +14,11 @@ from leaderf.manager import *
 # MakeExplorer
 #*****************************************************
 class MakeExplorer(Explorer):
-    consumer = ""
     def __init__(self):
         pass
 
     def getContent(self, *args, **kwargs):
         provider = kwargs.get("arguments", {}).get("--provider", [])[0]
-        MakeExplorer.consumer = kwargs.get("arguments", {}).get("--consumer", [])[0]
         result = lfEval("{}()".format(provider)).splitlines()
         return result
 
@@ -35,8 +33,14 @@ class MakeExplorer(Explorer):
 # MakeExplManager
 #*****************************************************
 class MakeExplManager(Manager):
+
     def __init__(self):
+        self.consumer = ""
         super(MakeExplManager, self).__init__()
+
+    def startExplorer(self, win_pos, *args, **kwargs):
+        self.consumer = kwargs.get("arguments", {}).get("--consumer", [])[0]
+        super(MakeExplManager, self).startExplorer(win_pos, *args, **kwargs)
 
     def _getExplClass(self):
         return MakeExplorer
@@ -48,9 +52,7 @@ class MakeExplManager(Manager):
         if len(args) == 0:
             return
         line = args[0]
-        consumer = MakeExplorer.consumer
-        lfEval('{}("{}")'.format(consumer, line))
-        # lfCmd('FloatermNewKeep make {}'.format(line))
+        lfEval('{}("{}")'.format(self.consumer, line))
 
     def _getDigest(self, line, mode):
         """
@@ -94,11 +96,15 @@ class MakeExplManager(Manager):
             return
 
         line = args[0]
-        cmd = "silent! norm! `" + line.split(None, 1)[0]
-
         saved_eventignore = vim.options['eventignore']
         vim.options['eventignore'] = 'BufWinEnter'
-        vim.options['eventignore'] = saved_eventignore
+        try:
+            line = args[0]
+            if os.path.isfile(line):
+                buf_number = lfEval("bufadd('{}')".format(escQuote(line)))
+                self._createPopupPreview(line, buf_number, 0)
+        finally:
+            vim.options['eventignore'] = saved_eventignore
 
 
 #*****************************************************
