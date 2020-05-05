@@ -61,7 +61,7 @@ class MakeExplManager(Manager):
             return
         line = args[0]
         if self.consumer != "":
-            lfEval('{}("{}")'.format(self.consumer, line))
+            lfEval('{}("{}")'.format(self.consumer, line.replace('"', '\\"')))
 
     def _getDigest(self, line, mode):
         """
