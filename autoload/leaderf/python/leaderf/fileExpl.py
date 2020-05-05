@@ -809,9 +809,15 @@ class FileExplManager(Manager):
 
     @removeDevIcons
     def _previewInPopup(self, *args, **kwargs):
-        line = args[0]
-        buf_number = lfEval("bufadd('{}')".format(escQuote(line)))
-        self._createPopupPreview(line, buf_number, 0)
+        file = args[0]
+        if not os.path.isabs(file):
+            if self._getExplorer()._cmd_work_dir:
+                file = os.path.join(self._getExplorer()._cmd_work_dir, lfDecode(file))
+            else:
+                file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
+                file = os.path.normpath(lfEncode(file))
+        buf_number = lfEval("bufadd('{}')".format(escQuote(file)))
+        self._createPopupPreview(file, buf_number, 0)
 
     @removeDevIcons
     def _acceptSelection(self, *args, **kwargs):
