@@ -699,6 +699,8 @@ class Manager(object):
             preview:
                 if True, always preview the result no matter what `g:Lf_PreviewResult` is.
         """
+        line = self._getInstance().currentLine
+        lfCmd("let @l='{}'".format(line.replace('"', '\\"')))
         if lfEval("g:Lf_PreviewResultToggle") == '1':
             return True
         else:

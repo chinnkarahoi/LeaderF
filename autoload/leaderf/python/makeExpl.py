@@ -19,7 +19,9 @@ class MakeExplorer(Explorer):
 
     def getContent(self, *args, **kwargs):
         provider = kwargs.get("arguments", {}).get("--provider", [""])[0]
-        result = lfEval("{}()".format(provider)).splitlines()
+        result = lfEval("{}()".format(provider))
+        if not isinstance(result, list):
+            result = result.splitlines()
         return result
 
     def getStlCategory(self):
@@ -51,6 +53,7 @@ class MakeExplManager(Manager):
         lfCmd("call leaderf#Make#Maps()")
 
     def _needPreview(self, preview):
+        super(MakeExplManager, self)._needPreview(preview)
         return lfEval("get(g:, 'Lf_PreviewInPopup', 0)") == '1'
 
     def _acceptSelection(self, *args, **kwargs):
