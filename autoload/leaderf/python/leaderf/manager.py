@@ -422,7 +422,10 @@ class Manager(object):
             else:
                 maxwidth = min(width, int(lfEval("&columns")))
             relative = 'editor'
+            saved_eventignore = vim.options['eventignore']
+            vim.options['eventignore'] = 'BufWinEnter,BufEnter,WinEnter'
             lfCmd("silent! call bufload(%d)" % buf_number)
+            vim.options['eventignore'] = saved_eventignore
             buffer_len = len(vim.buffers[buf_number])
             float_window = self._getInstance().window
             float_win_row = int(float(lfEval("nvim_win_get_config(%d).row" % float_window.id)))
