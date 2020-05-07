@@ -203,4 +203,5 @@ try
 catch /^Vim\%((\a\+)\)\=:E227/
 endtry
 
-command! -nargs=* -bang -complete=customlist,leaderf#Any#parseArguments Leaderf call leaderf#Any#start(<bang>0, <q-args>)
+command! -nargs=* -bang -complete=customlist,leaderf#Any#parseArguments Leaderf
+      \ call leaderf#Any#start(<bang>0, <q-args>)

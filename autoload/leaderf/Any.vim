@@ -332,12 +332,17 @@ if !exists("g:Lf_PreviewResultToggle")
   let g:Lf_PreviewResultToggle = 0
 endif
 function! leaderf#Any#start(bang, args) abort
+  try
+    set ei=BufEnter,BufLeave,WinEnter,WinLeave
     if a:args == ""
-
     else
         let @w=expand('<cword>')
         call leaderf#LfPy("anyHub.start(r''' ".a:args." ''', bang=".a:bang.")")
         " let g:Lf_PreviewResultToggle = 0
     endif
+  catch
+  finally
+    set  ei =
+  endtry
 endfunction
 
