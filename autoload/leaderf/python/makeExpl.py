@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import vim
 import os
 import os.path
-from leaderf.utils import *
-from leaderf.explorer import *
 import subprocess
+
+import vim
+from leaderf.explorer import *
 from leaderf.manager import *
+from leaderf.utils import *
+from leaderf.fileExpl import FileExplManager
 
 
 #*****************************************************
@@ -34,7 +36,7 @@ class MakeExplorer(Explorer):
 #*****************************************************
 # MakeExplManager
 #*****************************************************
-class MakeExplManager(Manager):
+class MakeExplManager(FileExplManager):
 
     def __init__(self):
         self.consumer = ""
@@ -62,6 +64,33 @@ class MakeExplManager(Manager):
         line = args[0]
         if self.consumer != "":
             lfEval('{}("{}")'.format(self.consumer, line.replace('"', '\\"')))
+            return
+        if len(args) == 0:
+            return
+        file = args[0]
+        try:
+            if not os.path.isabs(file):
+                if self._getExplorer()._cmd_work_dir:
+                    file = os.path.join(self._getExplorer()._cmd_work_dir, lfDecode(file))
+                else:
+                    file = os.path.join(self._getInstance().getCwd(), lfDecode(file))
+                file = os.path.normpath(lfEncode(file))
+
+            if kwargs.get("mode", '') != 't' or (lfEval("get(g:, 'Lf_DiscardEmptyBuffer', 0)") == '1'
+                    and len(vim.tabpages) == 1 and len(vim.current.tabpage.windows) == 1
+                    and vim.current.buffer.name == '' and len(vim.current.buffer) == 1
+                    and vim.current.buffer[0] == '' and not vim.current.buffer.options["modified"]):
+                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 0)") == '1':
+                    lfCmd("hide drop %s" % escSpecial(file))
+                else:
+                    if vim.current.buffer.options["modified"]:
+                        lfCmd("hide edit %s" % escSpecial(file))
+                    else:
+                        lfCmd("edit %s" % escSpecial(file))
+            else:
+                lfCmd("tab drop %s" % escSpecial(file))
+        except vim.error as e: # E37
+            lfPrintError(e)
 
     def _getDigest(self, line, mode):
         """
@@ -124,4 +153,3 @@ class MakeExplManager(Manager):
 makeExplManager = MakeExplManager()
 
 __all__ = ['makeExplManager']
-
