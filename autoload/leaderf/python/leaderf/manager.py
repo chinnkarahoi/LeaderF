@@ -2342,6 +2342,11 @@ class Manager(object):
                 self._search(self._content)
         elif self._empty_query and self._getExplorer().getStlCategory() in ["File"]:
             self._guessSearch(self._content)
+        if not self._cli.pattern:
+            try:
+                self._previewResult(False)
+            except:
+                pass
 
         for cmd in self._cli.input(self._callback):
             def get_cur_content():
