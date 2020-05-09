@@ -2338,6 +2338,7 @@ class Manager(object):
 
         if self._cli.pattern:    # --input xxx or from normal mode to input mode
             if self._index == 0: # --input xxx
+                self._guessSearch(self._content)
                 self._search(self._content)
         elif self._empty_query and self._getExplorer().getStlCategory() in ["File"]:
             self._guessSearch(self._content)

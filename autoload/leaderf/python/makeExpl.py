@@ -9,7 +9,6 @@ import vim
 from leaderf.explorer import *
 from leaderf.manager import *
 from leaderf.utils import *
-from leaderf.fileExpl import FileExplManager
 
 
 #*****************************************************
@@ -36,7 +35,7 @@ class MakeExplorer(Explorer):
 #*****************************************************
 # MakeExplManager
 #*****************************************************
-class MakeExplManager(FileExplManager):
+class MakeExplManager(Manager):
 
     def __init__(self):
         self.consumer = ""
