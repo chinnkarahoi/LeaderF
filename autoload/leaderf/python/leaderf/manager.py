@@ -424,7 +424,7 @@ class Manager(object):
             relative = 'editor'
             saved_eventignore = vim.options['eventignore']
             # TODO: bufread trigger linting
-            vim.options['eventignore'] = 'BufEnter,BufLeave,WinEnter'
+            vim.options['eventignore'] = 'BufWinEnter,BufEnter,WinEnter'
             lfCmd("autocmd! coc_nvim BufReadPost")
             lfCmd("silent! call bufload(%d)" % buf_number)
             vim.options['eventignore'] = saved_eventignore
