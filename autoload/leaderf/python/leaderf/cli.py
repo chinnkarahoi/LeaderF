@@ -798,4 +798,3 @@ class LfCli(object):
         except vim.error: # for neovim
             lfCmd("call getchar(0)")
             yield '<Quit>'
-

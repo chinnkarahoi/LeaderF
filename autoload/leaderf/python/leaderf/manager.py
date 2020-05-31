@@ -1591,7 +1591,7 @@ class Manager(object):
             return iter([])
 
     def _regexSearch(self, content, is_continue, step):
-        if not self._cli.isPrefix:
+        if not is_continue and not self._cli.isPrefix:
             self._index = 0
         self._result_content = self._filter(8000, self._regexFilter, content, is_continue)
         self._getInstance().setBuffer(self._result_content[:self._initial_count])
@@ -2023,6 +2023,8 @@ class Manager(object):
 
             self._index = 0
             pattern = kwargs.get("pattern", "") or arguments_dict.get("--input", [""])[0]
+            if len(pattern) > 1 and (pattern[0] == '"' and pattern[-1] == '"' or pattern[0] == "'" and pattern[-1] == "'"):
+                pattern = pattern[1:-1]
             self._cli.setPattern(pattern)
             self._result_content = []
             self._cb_content = []
