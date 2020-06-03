@@ -1643,7 +1643,7 @@ class Manager(object):
             elif mode == 'h':
                 lfCmd("split")
             elif mode == 'v':
-                lfCmd("bel vsplit")
+                lfCmd("Split")
 
             kwargs["mode"] = mode
             tabpage_count = len(vim.tabpages)
