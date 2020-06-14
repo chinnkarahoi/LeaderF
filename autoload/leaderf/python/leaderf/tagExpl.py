@@ -80,7 +80,10 @@ class TagExplManager(Manager):
             if kwargs.get("mode", '') == 't':
                 lfCmd("tab drop %s" % escSpecial(tagfile))
             else:
-                lfCmd("edit %s" % escSpecial(tagfile))
+                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1' and lfEval("bufexists('%s')" % escQuote(tagfile)) == '1':
+                    lfCmd("keepj hide drop %s" % escSpecial(tagfile))
+                else:
+                    lfCmd("hide edit %s" % escSpecial(tagfile))
         except vim.error as e: # E37
             lfPrintError(e)
 

@@ -839,7 +839,7 @@ g:Lf_JumpToExistingWindow                       *g:Lf_JumpToExistingWindow*
     Jump to existing window if the selected file is already opened in a
     window.
 
-    Default value is 0.
+    Default value is 1.
 
 g:Lf_ShowDevIcons                               *g:Lf_ShowDevIcons*
     Support commands: buffer,file,mru,window
@@ -985,6 +985,12 @@ USAGE                                           *leaderf-usage*
 
 :LeaderfWindow                                  *LeaderfWindow*
     Launch LeaderF to search windows.
+
+:LeaderfQuickFix                                *LeaderfQuickFix*
+    Launch LeaderF to navigate the quickfix.
+
+:LeaderfLocList                                 *LeaderfLocList*
+    Launch LeaderF to navigate the location list.
 
 :LeaderfRgInteractive                           *LeaderfRgInteractive*
     Launch LeaderF to use rg interactively.

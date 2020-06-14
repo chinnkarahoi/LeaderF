@@ -17,7 +17,10 @@ from .cli import LfCli
 from .utils import *
 from .fuzzyMatch import FuzzyMatch
 from .asyncExecutor import AsyncExecutor
-from .devicons import removeDevIcons
+from .devicons import (
+    webDevIconsGetFileTypeSymbol,
+    removeDevIcons
+)
 
 is_fuzzyEngine_C = False
 try:
@@ -484,8 +487,9 @@ class Manager(object):
             cur_winid = lfEval("win_getid()")
             lfCmd("noautocmd call win_gotoid(%d)" % self._preview_winid)
             lfCmd("silent! %foldopen!")
+            lfCmd("norm! zz")
             lfCmd("noautocmd call win_gotoid(%s)" % cur_winid)
-            lfCmd("redraw!")
+            # lfCmd("redraw!") # maybe we don't need it, it makes the preview slow
         else:
             popup_window = self._getInstance().window
             popup_pos = lfEval("popup_getpos(%d)" % popup_window.id)
@@ -575,6 +579,7 @@ class Manager(object):
                 lfCmd("""call win_execute(%d, "exec 'norm! %dG'")""" % (self._preview_winid, line_nr))
             lfCmd("call win_execute(%d, 'setlocal cursorline nonumber norelativenumber colorcolumn= ')" % self._preview_winid)
             lfCmd("call win_execute(%d, 'setlocal wincolor=Lf_hl_popup_window')" % self._preview_winid)
+            lfCmd("call win_execute(%d, 'norm! zz')" % self._preview_winid)
 
     def _createPopupPreview(self, title, buf_number, line_nr, jump_cmd=''):
         self._is_previewed = True
@@ -1080,7 +1085,7 @@ class Manager(object):
                                             is_name_only=False, sort_results=False, is_and_mode=True)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Tag", "Rg", "Filetype",
-                        "Command", "Window"]:
+                        "Command", "Window", "QuickFix", "LocList"]:
                     filter_method = partial(fuzzyEngine.fuzzyMatchEx, engine=self._fuzzy_engine, pattern=pattern,
                                             is_name_only=True, sort_results=False, is_and_mode=True)
                 else:
@@ -1109,7 +1114,7 @@ class Manager(object):
                                             fuzzy_match.getWeight2)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Tag", "Rg", "Filetype",
-                        "Command", "Window"]:
+                        "Command", "Window", "QuickFix", "LocList"]:
                     filter_method = partial(self._fuzzyFilterEx,
                                             self._cli.isFullPath,
                                             fuzzy_match.getWeight3)
@@ -1269,7 +1274,7 @@ class Manager(object):
                                             param=fuzzyEngine.createParameter(1), is_name_only=True, sort_results=True)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Filetype",
-                        "Command", "Window"]:
+                        "Command", "Window", "QuickFix", "LocList"]:
                     return_index = True
                     filter_method = partial(fuzzyEngine.fuzzyMatchEx, engine=self._fuzzy_engine, pattern=pattern,
                                             is_name_only=True, sort_results=True)
@@ -1301,7 +1306,7 @@ class Manager(object):
                                             fuzzy_match.getWeight2)
                 elif self._getExplorer().getStlCategory() in ["Self", "Buffer", "Mru", "BufTag",
                         "Function", "History", "Cmd_History", "Search_History", "Rg", "Filetype",
-                        "Command", "Window"]:
+                        "Command", "Window", "QuickFix", "LocList"]:
                     filter_method = partial(self._fuzzyFilter,
                                             self._cli.isFullPath,
                                             fuzzy_match.getWeight3)
@@ -1354,11 +1359,12 @@ class Manager(object):
             self._highlight_method = highlight_method
             self._highlight_method()
 
-    def _guessFilter(self, filename, suffix, dirname, iterable):
+    def _guessFilter(self, filename, suffix, dirname, icon, iterable):
         """
         return a list, each item is a pair (weight, line)
         """
-        return ((FuzzyMatch.getPathWeight(filename, suffix, dirname, line), line) for line in iterable)
+        icon_len = len(icon)
+        return ((FuzzyMatch.getPathWeight(filename, suffix, dirname, line[icon_len:]), line) for line in iterable)
 
     def _guessSearch(self, content, is_continue=False, step=0):
         if self._cur_buffer.name == '' or self._cur_buffer.options["buftype"] not in [b'', '']:
@@ -1377,15 +1383,19 @@ class Manager(object):
         buffer_name = lfEncode(buffer_name)
         dirname, basename = os.path.split(buffer_name)
         filename, suffix = os.path.splitext(basename)
+        if lfEval("get(g:, 'Lf_ShowDevIcons', 1)") == "1":
+            icon = webDevIconsGetFileTypeSymbol(basename)
+        else:
+            icon = ''
         if self._fuzzy_engine:
             filter_method = partial(fuzzyEngine.guessMatch, engine=self._fuzzy_engine, filename=filename,
-                                    suffix=suffix, dirname=dirname, sort_results=True)
+                                    suffix=suffix, dirname=dirname, icon=icon, sort_results=True)
             step = len(content)
 
             _, self._result_content = self._filter(step, filter_method, content, is_continue, True)
         else:
             step = len(content)
-            filter_method = partial(self._guessFilter, filename, suffix, dirname)
+            filter_method = partial(self._guessFilter, filename, suffix, dirname, icon)
             pairs = self._filter(step, filter_method, content, is_continue)
             pairs.sort(key=operator.itemgetter(0), reverse=True)
             self._result_content = self._getList(pairs)
@@ -1717,6 +1727,7 @@ class Manager(object):
                 self._accept(files[0], mode)
                 self._argaddFiles(files)
                 self._accept(files[0], mode)
+                lfCmd("doautocmd BufwinEnter")
             else:
                 for file in files:
                     self._accept(file, mode)

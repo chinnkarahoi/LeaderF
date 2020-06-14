@@ -836,8 +836,8 @@ class FileExplManager(Manager):
                     and len(vim.tabpages) == 1 and len(vim.current.tabpage.windows) == 1
                     and vim.current.buffer.name == '' and len(vim.current.buffer) == 1
                     and vim.current.buffer[0] == '' and not vim.current.buffer.options["modified"]):
-                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1':
-                    lfCmd("hide drop %s" % escSpecial(file))
+                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1' and lfEval("bufexists('%s')" % escQuote(file)) == '1':
+                    lfCmd("keepj hide drop %s" % escSpecial(file))
                 else:
                     if vim.current.buffer.options["modified"]:
                         lfCmd("hide edit %s" % escSpecial(file))

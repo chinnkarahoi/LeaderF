@@ -401,6 +401,9 @@ class RgExplManager(Manager):
         if len(args) == 0:
             return
 
+        if args[0] == self._getExplorer().getContextSeparator():
+            return
+
         line = args[0]
         if "-A" in self._arguments or "-B" in self._arguments or "-C" in self._arguments:
             m = re.match(r'^(.+?)([:-])(\d+)\2', line)
@@ -444,8 +447,8 @@ class RgExplManager(Manager):
                 if kwargs.get("mode", '') == 't':
                     lfCmd("tab drop %s | %s" % (escSpecial(file), line_num))
                 else:
-                    if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1':
-                        lfCmd("hide drop %s | %s" % (escSpecial(file), line_num))
+                    if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1' and lfEval("bufexists('%s')" % escQuote(file)) == '1':
+                        lfCmd("keepj hide drop %s | %s" % (escSpecial(file), line_num))
                     else:
                         lfCmd("hide edit +%s %s" % (line_num, escSpecial(file)))
             else:
@@ -744,6 +747,9 @@ class RgExplManager(Manager):
         if len(args) == 0:
             return
 
+        if args[0] == self._getExplorer().getContextSeparator():
+            return
+
         line = args[0]
         if "-A" in self._arguments or "-B" in self._arguments or "-C" in self._arguments:
             m = re.match(r'^(.+?)([:-])(\d+)\2', line)
@@ -798,15 +804,26 @@ class RgExplManager(Manager):
     def _getFormatedContents(self):
         items = []
         for line in self._instance._buffer_object:
-            m = re.match(r'^(?:\.[\\/])?([^:]+):(\d+):(.*)$', line)
-            if m:
-                fpath, lnum, text = m.group(1, 2, 3)
-                items.append({
-                    "filename": fpath,
-                    "lnum": lnum,
-                    "col": 1,
-                    "text": text,
-                })
+            if self._has_column:
+                m = re.match(r'^(?:\.[\\/])?([^:]+):(\d+):(\d+):(.*)$', line)
+                if m:
+                    fpath, lnum, col, text = m.group(1, 2, 3, 4)
+                    items.append({
+                        "filename": fpath,
+                        "lnum": lnum,
+                        "col": col,
+                        "text": text,
+                    })
+            else:
+                m = re.match(r'^(?:\.[\\/])?([^:]+):(\d+):(.*)$', line)
+                if m:
+                    fpath, lnum, text = m.group(1, 2, 3)
+                    items.append({
+                        "filename": fpath,
+                        "lnum": lnum,
+                        "col": 1,
+                        "text": text,
+                    })
         return items
 
 #*****************************************************

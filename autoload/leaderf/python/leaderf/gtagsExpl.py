@@ -94,6 +94,7 @@ class GtagsExplorer(Explorer):
             self._gtagslibpath = []
 
         if "--update" in arguments_dict:
+            self._evalVimVar()
             if "--accept-dotfiles" in arguments_dict:
                 self._accept_dotfiles = "--accept-dotfiles "
             if "--skip-unreadable" in arguments_dict:
@@ -911,8 +912,8 @@ class GtagsExplManager(Manager):
             if kwargs.get("mode", '') == 't':
                 lfCmd("tab drop %s | %s" % (escSpecial(file), line_num))
             else:
-                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1':
-                    lfCmd("hide drop %s | %s" % (escSpecial(file), line_num))
+                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1' and lfEval("bufexists('%s')" % escQuote(file)) == '1':
+                    lfCmd("keepj hide drop %s | %s" % (escSpecial(file), line_num))
                 else:
                     lfCmd("hide edit +%s %s" % (line_num, escSpecial(file)))
             lfCmd("norm! ^zv")

@@ -148,8 +148,8 @@ class MruExplManager(Manager):
             if kwargs.get("mode", '') == 't':
                 lfCmd("tab drop %s" % escSpecial(file))
             else:
-                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1':
-                    lfCmd("hide drop %s" % escSpecial(file))
+                if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1' and lfEval("bufexists('%s')" % escQuote(file)) == '1':
+                    lfCmd("keepj hide drop %s" % escSpecial(file))
                 else:
                     lfCmd("hide edit %s" % escSpecial(file))
         except vim.error as e: # E37
