@@ -301,6 +301,7 @@ class Manager(object):
         pass
 
     def _bangEnter(self):
+        self._preview_open = False
         self._current_mode = 'NORMAL'
         if self._getInstance().getWinPos() == 'popup':
             self._cli.hideCursor()
@@ -316,7 +317,9 @@ class Manager(object):
             self._search(self._content)
 
     def _bangReadFinished(self):
-        pass
+        if self._preview_open == False and self._getInstance().getWinPos() in ('popup', 'floatwin'):
+            self._previewResult(False)
+            self._preview_open = True
 
     def _getList(self, pairs):
         """
@@ -572,8 +575,8 @@ class Manager(object):
             if jump_cmd:
                 lfCmd("""call win_execute(%d, '%s')""" % (self._preview_winid, escQuote(jump_cmd)))
             elif line_nr > 0:
-                lfCmd("""call win_execute(%d, "exec 'norm! %dG'")""" % (self._preview_winid, line_nr))
-            lfCmd("call win_execute(%d, 'setlocal cursorline nonumber norelativenumber colorcolumn= ')" % self._preview_winid)
+                lfCmd("""call win_execute(%d, "call cursor(%d, 1)")""" % (self._preview_winid, line_nr))
+            lfCmd("call win_execute(%d, 'setlocal cursorline number norelativenumber colorcolumn= ')" % self._preview_winid)
             lfCmd("call win_execute(%d, 'setlocal wincolor=Lf_hl_popup_window')" % self._preview_winid)
 
     def _createPopupPreview(self, title, buf_number, line_nr, jump_cmd=''):
@@ -2191,6 +2194,11 @@ class Manager(object):
             else:
                 raise self._read_content_exception[1]
 
+        if bang == False and self._preview_open == False and self._getInstance().getWinPos() in ('popup', 'floatwin') \
+                and not self._getInstance().empty():
+            self._previewResult(False)
+            self._preview_open = True
+
         if self._is_content_list:
             if self._cli.pattern and (self._index < len(self._content) or len(self._cb_content) > 0):
                 if self._fuzzy_engine:
@@ -2319,6 +2327,7 @@ class Manager(object):
 
     @modifiableController
     def input(self):
+        self._preview_open = False
         self._current_mode = 'INPUT'
         self._getInstance().hideMimicCursor()
         if self._getInstance().getWinPos() in ('popup', 'floatwin'):
@@ -2340,15 +2349,9 @@ class Manager(object):
 
         if self._cli.pattern:    # --input xxx or from normal mode to input mode
             if self._index == 0: # --input xxx
-                self._guessSearch(self._content)
                 self._search(self._content)
         elif self._empty_query and self._getExplorer().getStlCategory() in ["File"]:
             self._guessSearch(self._content)
-        if not self._cli.pattern:
-            try:
-                self._previewResult(False)
-            except:
-                pass
 
         for cmd in self._cli.input(self._callback):
             def get_cur_content():
