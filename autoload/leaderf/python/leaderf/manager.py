@@ -576,7 +576,7 @@ class Manager(object):
                 lfCmd("""call win_execute(%d, '%s')""" % (self._preview_winid, escQuote(jump_cmd)))
             elif line_nr > 0:
                 lfCmd("""call win_execute(%d, "call cursor(%d, 1)")""" % (self._preview_winid, line_nr))
-            lfCmd("call win_execute(%d, 'setlocal cursorline number norelativenumber colorcolumn= ')" % self._preview_winid)
+            lfCmd("call win_execute(%d, 'setlocal cursorline nonumber norelativenumber colorcolumn= ')" % self._preview_winid)
             lfCmd("call win_execute(%d, 'setlocal wincolor=Lf_hl_popup_window')" % self._preview_winid)
 
     def _createPopupPreview(self, title, buf_number, line_nr, jump_cmd=''):
