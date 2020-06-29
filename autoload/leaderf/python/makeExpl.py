@@ -62,7 +62,7 @@ class MakeExplManager(Manager):
             return
         line = args[0]
         if self.consumer != "":
-            lfEval('{}("{}")'.format(self.consumer, line.replace('"', '\\"')))
+            lfEval("{}('{}')".format(self.consumer, line.replace("'", "\\'")))
             return
         if len(args) == 0:
             return
