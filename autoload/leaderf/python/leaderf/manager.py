@@ -1644,9 +1644,9 @@ class Manager(object):
             if mode == '':
                 pass
             elif mode == 'h':
-                lfCmd("split")
+                lfCmd("vsplit")
             elif mode == 'v':
-                lfCmd("Split")
+                lfCmd("split")
 
             kwargs["mode"] = mode
             tabpage_count = len(vim.tabpages)
