@@ -133,11 +133,11 @@ class BufExplManager(Manager):
         buf_number = int(re.sub(r"^.*?(\d+).*$", r"\1", line))
         if kwargs.get("mode", '') == 't':
             buf_name = lfEval("bufname(%s)" % buf_number)
-            lfCmd("Tabdrop %s" % escSpecial(buf_name))
+            lfCmd("tab drop %s" % escSpecial(buf_name))
         else:
             if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1':
                 buf_name = lfEval("bufname(%s)" % buf_number)
-                lfCmd("edit %s" % escSpecial(buf_name))
+                lfCmd("hide drop %s" % escSpecial(buf_name))
             else:
                 lfCmd("hide buffer %d" % buf_number)
 

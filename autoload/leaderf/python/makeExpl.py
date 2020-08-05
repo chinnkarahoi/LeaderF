@@ -80,14 +80,14 @@ class MakeExplManager(Manager):
                     and vim.current.buffer.name == '' and len(vim.current.buffer) == 1
                     and vim.current.buffer[0] == '' and not vim.current.buffer.options["modified"]):
                 if lfEval("get(g:, 'Lf_JumpToExistingWindow', 0)") == '1':
-                    lfCmd("edit %s" % escSpecial(file))
+                    lfCmd("hide drop %s" % escSpecial(file))
                 else:
                     if vim.current.buffer.options["modified"]:
                         lfCmd("hide edit %s" % escSpecial(file))
                     else:
                         lfCmd("edit %s" % escSpecial(file))
             else:
-                lfCmd("Tabdrop %s" % escSpecial(file))
+                lfCmd("tab drop %s" % escSpecial(file))
         except vim.error as e: # E37
             lfPrintError(e)
 
