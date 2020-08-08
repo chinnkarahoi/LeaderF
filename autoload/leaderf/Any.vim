@@ -337,6 +337,7 @@ if !exists("g:Lf_PreviewResultToggle")
 endif
 function! leaderf#Any#start(bang, args) abort
   try
+    wall
     set ei=BufEnter,BufLeave,WinEnter,WinLeave
     if a:args == ""
     else
