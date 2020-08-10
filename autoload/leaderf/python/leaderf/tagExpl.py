@@ -208,7 +208,6 @@ class TagExplManager(Manager):
             tagaddress = tagaddress.replace("[",'.?')
             tagaddress = tagaddress.replace("]",'.?')
             index = [x + 1 for x in range(len(content)) if bool(re.match(tagaddress.replace('\\','.?'), content[x]))]
-            print(tagaddress)
             tagaddress = str(index[0])
 
         buf_number = lfEval("bufadd('{}')".format(escQuote(file)))
