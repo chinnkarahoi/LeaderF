@@ -149,7 +149,7 @@ class MruExplManager(Manager):
                 lfCmd("tab new %s" % escSpecial(file))
             else:
                 if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1':
-                    lfCmd("hide drop %s" % escSpecial(file))
+                    lfCmd("edit %s" % escSpecial(file))
                 else:
                     lfCmd("hide edit %s" % escSpecial(file))
         except vim.error as e: # E37
