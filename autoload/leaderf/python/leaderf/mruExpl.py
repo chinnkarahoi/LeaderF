@@ -146,7 +146,7 @@ class MruExplManager(Manager):
                 file = os.path.normpath(lfEncode(file))
 
             if kwargs.get("mode", '') == 't':
-                lfCmd("tab drop %s" % escSpecial(file))
+                lfCmd("tab new %s" % escSpecial(file))
             else:
                 if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1':
                     lfCmd("hide drop %s" % escSpecial(file))

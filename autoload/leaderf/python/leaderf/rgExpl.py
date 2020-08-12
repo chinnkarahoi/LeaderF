@@ -442,7 +442,7 @@ class RgExplManager(Manager):
         try:
             if buf_number == -1:
                 if kwargs.get("mode", '') == 't':
-                    lfCmd("tab drop %s | %s" % (escSpecial(file), line_num))
+                    lfCmd("tab new %s | %s" % (escSpecial(file), line_num))
                 else:
                     if lfEval("get(g:, 'Lf_JumpToExistingWindow', 1)") == '1':
                         lfCmd("hide drop %s | %s" % (escSpecial(file), line_num))

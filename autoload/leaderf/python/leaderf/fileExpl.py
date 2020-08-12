@@ -844,7 +844,7 @@ class FileExplManager(Manager):
                     else:
                         lfCmd("edit %s" % escSpecial(file))
             else:
-                lfCmd("tab drop %s" % escSpecial(file))
+                lfCmd("tab new %s" % escSpecial(file))
         except vim.error as e: # E37
             lfPrintError(e)
 

@@ -78,7 +78,7 @@ class TagExplManager(Manager):
         tagaddress = res[0]
         try:
             if kwargs.get("mode", '') == 't':
-                lfCmd("tab drop %s" % escSpecial(tagfile))
+                lfCmd("tab new %s" % escSpecial(tagfile))
             else:
                 lfCmd("edit %s" % escSpecial(tagfile))
         except vim.error as e: # E37
