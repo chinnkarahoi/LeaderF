@@ -1636,7 +1636,7 @@ class Manager(object):
             # lfCmd("silent! wincmd p | silent! tabonly | silent! source " + lfEval('g:Lf_SessionFilePath'))
             if mode != '':
                 try:
-                    lfCmd('norm `Z')
+                    lfCmd('norm! `Z')
                 except:
                     pass
             lfCmd("norm! m'")
@@ -2429,7 +2429,7 @@ class Manager(object):
                 self.quit()
                 # lfCmd("silent! tabonly | silent! source " + lfEval('g:Lf_SessionFilePath'))
                 try:
-                    lfCmd('norm `Z')
+                    lfCmd('norm! `Z')
                 except:
                     pass
                 break

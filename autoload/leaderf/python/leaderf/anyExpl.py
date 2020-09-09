@@ -802,13 +802,13 @@ class AnyHub(object):
             arguments = vars(the_args)
             arguments = arguments.copy()
             if "start" in arguments:
-                lfCmd('norm mZ')
+                lfCmd('norm! mZ')
                 del arguments["start"]
                 arguments["arg_line"] = arg_line
                 the_args.start(arguments, *args, **kwargs)
                 self._last_cmd = the_args.start
             elif "--recall" in arguments:
-                lfCmd('norm mZ')
+                lfCmd('norm! mZ')
                 if self._last_cmd:
                     self._last_cmd(arguments, *args, **kwargs)
                 else:
