@@ -1644,7 +1644,7 @@ class Manager(object):
             if mode == '':
                 pass
             elif mode == 'h':
-                lfCmd("vsplit")
+                lfCmd("Split")
             elif mode == 'v':
                 lfCmd("split")
 
