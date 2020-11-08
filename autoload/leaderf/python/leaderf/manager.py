@@ -1358,6 +1358,8 @@ class Manager(object):
             self._highlight_method()
 
     def _guessFilter(self, filename, suffix, dirname, iterable):
+        if len(self._cli.pattern) > 1 and not is_continue:
+            lfCmd("redraw")
         """
         return a list, each item is a pair (weight, line)
         """

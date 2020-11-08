@@ -640,6 +640,8 @@ class LfCli(object):
             self._blinkon = True
             idle = 10000
             update = False
+            prefix = ""
+
             if lfEval("has('nvim') && exists('g:GuiLoaded')") == '1':
                 threshold = 2
             else:
@@ -666,7 +668,10 @@ class LfCli(object):
                             if idle >= threshold:
                                 update = False
                                 idle = 0
-                                yield '<Update>'
+                                if ''.join(self._cmdline).startswith(prefix):
+                                    yield '<Update>'
+                                else:
+                                    yield '<Shorten>'
                         else:
                             try:
                                 callback()
@@ -690,7 +695,10 @@ class LfCli(object):
                             if idle >= threshold:
                                 update = False
                                 idle = 0
-                                yield '<Update>'
+                                if ''.join(self._cmdline).startswith(prefix):
+                                    yield '<Update>'
+                                else:
+                                    yield '<Shorten>'
                         else:
                             try:
                                 callback()
@@ -714,12 +722,15 @@ class LfCli(object):
                     if self._pattern is None or (self._refine and self._pattern[1] == ''): # e.g. abc;
                         continue
 
-                    update = True
+                    if update == False:
+                        update = True
+                        prefix = ''.join(self._cmdline)
+
                     if idle < threshold:
                         continue
                     else:
-                        idle = 0
                         update = False
+                        idle = 0
                         yield '<Update>'
                 else:
                     cmd = ''
@@ -754,7 +765,17 @@ class LfCli(object):
                             continue
                         self._backspace()
                         self._buildPattern()
-                        yield '<Shorten>'
+
+                        if update == False:
+                            update = True
+                            prefix = ''.join(self._cmdline)
+
+                        if idle < threshold:
+                            continue
+                        else:
+                            idle = 0
+                            update = False
+                            yield '<Shorten>'
                     elif equal(cmd, '<C-U>'):
                         if not self._pattern:
                             continue
